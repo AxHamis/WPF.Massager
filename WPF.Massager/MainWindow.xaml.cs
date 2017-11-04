@@ -222,8 +222,11 @@ namespace WPF.Massager
 
         private void updateexe()
         {
-            File.Move(System.Reflection.Assembly.GetExecutingAssembly().Location, System.Reflection.Assembly.GetExecutingAssembly().Location+".old");
-
+            string app = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            File.Move(app, app + ".old");
+            WebClient GIT = new WebClient();
+            GIT.DownloadFile("https://github.com/AxHamis/WPF.Massager/tree/master/WPF.Massager/bin/Debug/WPF.Massager.exe", app);
+            File.Delete(app + ".old");
         }
 
         private void Button_Click()
