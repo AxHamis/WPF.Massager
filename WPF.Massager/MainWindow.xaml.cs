@@ -28,7 +28,7 @@ namespace WPF.Massager
         private static extern UInt32 GetWindowLong(IntPtr hWnd, int nIndex);
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, UInt32 dwNewLong);
-        const string version = "0.0.1";
+        const string version = "Alpha 0.0.1";
 
         public static void alwaysonbottom(Window F)
         {
@@ -238,17 +238,11 @@ namespace WPF.Massager
 
         private void updateexe()
         {
-            SystemMassageColor("----------------------------------------\n");
-            SystemMassageColor("START UPDATE\n");
-            SystemMassageColor("YOU VERSION:"+version+"\n");
-            SystemMassageColor("----------------------------------------\n");
+            Thread.Sleep(1000);
             string app = System.Reflection.Assembly.GetExecutingAssembly().Location;
             File.Move(app, app + ".old");
             WebClient GIT = new WebClient();
             GIT.DownloadFile("https://github.com/AxHamis/WPF.Massager/blob/master/WPF.Massager/bin/Debug/WPF.Massager.exe?raw=true", app);
-            SystemMassageColor("----------------------------------------\n");
-            SystemMassageColor("RESTART\n");
-            SystemMassageColor("----------------------------------------\n");
             Process.Start(app);
             Environment.Exit(0);
         }
@@ -270,7 +264,7 @@ namespace WPF.Massager
                 switch (com[0])
                 {
                     case "//up":
-                    case "/update": updateexe(); Massage.Text = ""; break;
+                    case "/update": Thread UP = new Thread(updateexe); SystemMassageColor("----------------------------------------\n"+"START UPDATE\n"+"YOU VERSION:"+version+"\n"+"----------------------------------------\n"); UP.Start(); Massage.Text = ""; break;
                     case "//sn":
                     case "/setnick": setnick(com[1]); Massage.Text = ""; break;
                     case "//ss":
