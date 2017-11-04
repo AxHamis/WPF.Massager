@@ -31,7 +31,7 @@ namespace WPF.Massager
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, UInt32 dwNewLong);
 
-        const string version = "Alpha 0.0.2";
+        const string version = "Alpha 0.0.3";
 
         public static void alwaysonbottom(Window F)
         {
@@ -227,6 +227,7 @@ namespace WPF.Massager
             SystemMassageColor("/font (//fo)\n");
             SystemMassageColor("/background (//bg)\n");
             SystemMassageColor("/pacity (//pa)\n");
+            SystemMassageColor("/update (//up)\n");
             SystemMassageColor("----------------------------------------\n");
         }
 
@@ -430,7 +431,7 @@ namespace WPF.Massager
             cl += list_clients_name.Count.ToString() + '\0';
             foreach (KeyValuePair<int, string> s in list_clients_name)
             {
-                string ip = list_clients[s.Key].Client.LocalEndPoint.ToString();
+                string ip = list_clients[s.Key].Client.RemoteEndPoint.ToString();
                 cl += s.Value + " ("+ip+")"+'\0';
             }
             return cl;
@@ -491,21 +492,28 @@ namespace WPF.Massager
             NetworkStream ns = client.GetStream();
             byte[] receivedBytes = new byte[1024 * 4];
             int byte_count;
-            while ((byte_count = ns.Read(receivedBytes, 0, receivedBytes.Length)) > 0)
+            try
             {
-                string s = Encoding.UTF8.GetString(receivedBytes, 0, byte_count);
-                if (s.StartsWith("infomsg\0"))
+                while ((byte_count = ns.Read(receivedBytes, 0, receivedBytes.Length)) > 0)
                 {
-                    string[] args = s.Split('\0');
-                    switch (args[1])
+                    string s = Encoding.UTF8.GetString(receivedBytes, 0, byte_count);
+                    if (s.StartsWith("infomsg\0"))
                     {
-                        case "userlist": updateuserlist(args); break;
+                        string[] args = s.Split('\0');
+                        switch (args[1])
+                        {
+                            case "userlist": updateuserlist(args); break;
+                        }
+                    }
+                    else
+                    {
+                        newmsg(s);
                     }
                 }
-                else
-                {
-                    newmsg(s);
-                }
+            }
+            catch
+            {
+
             }
         }
 
