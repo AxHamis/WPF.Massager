@@ -1,0 +1,15 @@
+c:\users\alhamis\source\repos\WPF.Massager\WPF.Massager\bin\Debug\WPF.Massager.exe.config
+c:\users\alhamis\source\repos\WPF.Massager\WPF.Massager\bin\Debug\WPF.Massager.exe
+c:\users\alhamis\source\repos\WPF.Massager\WPF.Massager\bin\Debug\WPF.Massager.pdb
+c:\users\alhamis\source\repos\WPF.Massager\WPF.Massager\obj\Debug\WPF.Massager.csprojResolveAssemblyReference.cache
+c:\users\alhamis\source\repos\WPF.Massager\WPF.Massager\obj\Debug\MainWindow.g.cs
+c:\users\alhamis\source\repos\WPF.Massager\WPF.Massager\obj\Debug\App.g.cs
+c:\users\alhamis\source\repos\WPF.Massager\WPF.Massager\obj\Debug\WPF.Massager_MarkupCompile.cache
+c:\users\alhamis\source\repos\WPF.Massager\WPF.Massager\obj\Debug\WPF.Massager_MarkupCompile.lref
+c:\users\alhamis\source\repos\WPF.Massager\WPF.Massager\obj\Debug\MainWindow.baml
+c:\users\alhamis\source\repos\WPF.Massager\WPF.Massager\obj\Debug\WPF.Massager.g.resources
+c:\users\alhamis\source\repos\WPF.Massager\WPF.Massager\obj\Debug\WPF.Massager.Properties.Resources.resources
+c:\users\alhamis\source\repos\WPF.Massager\WPF.Massager\obj\Debug\WPF.Massager.csproj.GenerateResource.Cache
+c:\users\alhamis\source\repos\WPF.Massager\WPF.Massager\obj\Debug\WPF.Massager.csproj.CoreCompileInputs.cache
+c:\users\alhamis\source\repos\WPF.Massager\WPF.Massager\obj\Debug\WPF.Massager.exe
+c:\users\alhamis\source\repos\WPF.Massager\WPF.Massager\obj\Debug\WPF.Massager.pdb
