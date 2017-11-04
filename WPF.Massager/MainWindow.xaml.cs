@@ -31,7 +31,7 @@ namespace WPF.Massager
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, UInt32 dwNewLong);
 
-        const string version = "Alpha 0.0.1";
+        const string version = "Alpha 0.0.2";
 
         public static void alwaysonbottom(Window F)
         {
