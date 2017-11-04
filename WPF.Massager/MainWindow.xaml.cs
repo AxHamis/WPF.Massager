@@ -50,6 +50,16 @@ namespace WPF.Massager
             SetWindowLong(Handle, -20, GetWindowLong(Handle, -20) | 0x00000080);
         }
 
+        struct settings
+        {
+            public FontFamily Font;
+            public Color Color;
+            public double Opacity;
+            public double TopButton;
+            public double BottomButton;
+            public string Username;
+        }
+
         private void ElementSetUp()
         {
             Width = 300;
@@ -170,11 +180,13 @@ namespace WPF.Massager
             if (s == "fixed")
             {
                 startinfo[2] = false;
+                Massages.Cursor = System.Windows.Input.Cursors.Arrow;
                 ElementSetUp();
             }
             if (s == "unfixed")
             {
                 startinfo[2] = true;
+                Massages.Cursor = System.Windows.Input.Cursors.SizeWE;
             }
         }
 
@@ -226,7 +238,7 @@ namespace WPF.Massager
             SystemMassageColor("/border (//bo)\n");
             SystemMassageColor("/font (//fo)\n");
             SystemMassageColor("/background (//bg)\n");
-            SystemMassageColor("/pacity (//pa)\n");
+            SystemMassageColor("/opacity (//op)\n");
             SystemMassageColor("/update (//up)\n");
             SystemMassageColor("----------------------------------------\n");
         }
@@ -289,8 +301,8 @@ namespace WPF.Massager
                     case "/font": setallfont(com[1]); Massage.Text = ""; break;
                     case "//bg":
                     case "/background": setbgcolor(com[1]); Massage.Text = ""; break;
-                    case "//pa":
-                    case "/pacity": setbgopas(com[1]); Massage.Text = ""; break;
+                    case "//op":
+                    case "/opacity": setbgopas(com[1]); Massage.Text = ""; break;
                     case "//hl":
                     case "/help": help(); Massage.Text = ""; break;
                     //case "/?testuserlist": string[] s = { "infomsg", "userlist", "5","Alex (127.0.0.1:11221)", "Make (127.0.0.2:11221)", "Lisa (127.0.0.3:11221)", "Bob (127.0.0.4:11221)", "Same (127.0.0.5:11221)" }; updateuserlist(s); break;

@@ -57,18 +57,18 @@
         <SolidColorBrush Color="Black" Opacity="0.4"/>
     </Window.Background>
     <Grid x:Name="MassageHistory">
-        <TextBox x:Name="Massage" FontFamily="Courier New" TextWrapping="Wrap" BorderBrush="{x:Null}" SelectionBrush="Black" Foreground="White" Style="{DynamicResource TextBoxStyle1}" Tag="Massage..." Height="46" VerticalAlignment="Bottom" Background="{x:Null}" KeyUp="Massage_KeyUp" MaxLength="500" AcceptsTab="True" MaxLines="100" KeyDown="Massage_KeyDown" AcceptsReturn="False"/>
-        <RichTextBox x:Name="Massages" Margin="0,10,0,56" Block.LineHeight="1" FontFamily="{Binding FontFamily, ElementName=Massage}" SelectionBrush="{x:Null}" BorderBrush="{x:Null}" Style="{DynamicResource RichTextBoxStyle1}" IsReadOnly="True" IsHitTestVisible="True" Foreground="{Binding Foreground, ElementName=Massage}" Background="{x:Null}" PreviewMouseMove="Massages_PreviewMouseMove">
+        <TextBox x:Name="Massage" FontFamily="Courier New" TextWrapping="Wrap" BorderBrush="{x:Null}" SelectionBrush="Black" Foreground="White" Style="{DynamicResource TextBoxStyle1}" Tag="Massage..." Height="46" VerticalAlignment="Bottom" Background="{x:Null}" KeyUp="Massage_KeyUp" MaxLength="500" AcceptsTab="True" MaxLines="100" KeyDown="Massage_KeyDown" AcceptsReturn="False" Cursor="IBeam"/>
+        <RichTextBox x:Name="Massages" Margin="0,10,0,56" Block.LineHeight="1" FontFamily="{Binding FontFamily, ElementName=Massage}" SelectionBrush="{x:Null}" BorderBrush="{x:Null}" Style="{DynamicResource RichTextBoxStyle1}" IsReadOnly="True" IsHitTestVisible="True" Foreground="{Binding Foreground, ElementName=Massage}" Background="{x:Null}" PreviewMouseMove="Massages_PreviewMouseMove" Cursor="Arrow">
             <FlowDocument>
                 <Paragraph>
                     <Run Text=""/>
                 </Paragraph>
             </FlowDocument>
         </RichTextBox>
-        <RichTextBox x:Name="usersbox" HorizontalAlignment="Left" Height="0" VerticalAlignment="Top" Width="300" Background="{x:Null}" BorderBrush="{x:Null}" SelectionBrush="{x:Null}" Foreground="{Binding Foreground, ElementName=Massages}" FontFamily="{Binding FontFamily, ElementName=Massages}" Style="{DynamicResource RichTextBoxStyle1}" IsReadOnly="True" AcceptsTab="True" Block.LineHeight="1">
+        <RichTextBox x:Name="usersbox" HorizontalAlignment="Left" Height="0" VerticalAlignment="Top" Width="300" Background="{x:Null}" BorderBrush="{x:Null}" SelectionBrush="{x:Null}" Foreground="{Binding Foreground, ElementName=Massages}" FontFamily="{Binding FontFamily, ElementName=Massages}" Style="{DynamicResource RichTextBoxStyle1}" IsReadOnly="True" AcceptsTab="True" Block.LineHeight="1" Cursor="{Binding Cursor, ElementName=Massages}">
             <FlowDocument/>
         </RichTextBox>
-        <Button x:Name="userboxbutton" Content="Button" VerticalAlignment="Top" Height="10" Foreground="{x:Null}" BorderBrush="{x:Null}" Background="{Binding Background, ElementName=window}" Style="{DynamicResource ButtonStyle1}" Padding="0" Margin="-1,-1,-1,0" PreviewMouseMove="userboxbutton_PreviewMouseMove"/>
-        <Button x:Name="userboxbutton_Copy" Content="Button" Foreground="{x:Null}" BorderBrush="{Binding Background, ElementName=window}" Background="{Binding Background, ElementName=window}" Style="{DynamicResource ButtonStyle1}" Margin="-1,0,-1,46" Height="10" VerticalAlignment="Bottom" Padding="0" PreviewMouseMove="userboxbutton_Copy_PreviewMouseMove"/>
+        <Button x:Name="userboxbutton" Content="Button" VerticalAlignment="Top" Height="10" Foreground="{x:Null}" BorderBrush="{x:Null}" Background="{Binding Background, ElementName=window}" Style="{DynamicResource ButtonStyle1}" Padding="0" Margin="-1,-1,-1,0" PreviewMouseMove="userboxbutton_PreviewMouseMove" Cursor="{Binding Cursor, ElementName=userboxbutton_Copy}"/>
+        <Button x:Name="userboxbutton_Copy" Content="Button" Foreground="{x:Null}" BorderBrush="{Binding Background, ElementName=window}" Background="{Binding Background, ElementName=window}" Style="{DynamicResource ButtonStyle1}" Margin="-1,0,-1,46" Height="10" VerticalAlignment="Bottom" Padding="0" PreviewMouseMove="userboxbutton_Copy_PreviewMouseMove" Cursor="SizeNS"/>
     </Grid>
 </Window>
