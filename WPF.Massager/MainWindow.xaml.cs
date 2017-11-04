@@ -19,8 +19,10 @@ namespace WPF.Massager
     {
         static readonly object _lock = new object();
         static readonly Dictionary<int, TcpClient> list_clients = new Dictionary<int, TcpClient>();
+        static readonly Dictionary<int, string> list_clients_name = new Dictionary<int, string>();
         static NetworkStream nscl = null;
-        public static String username = "NewUser";
+        public static String username = "";
+
         bool[] startinfo = new bool[3];
         [DllImport("user32.dll")]
         private static extern bool SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
@@ -28,6 +30,7 @@ namespace WPF.Massager
         private static extern UInt32 GetWindowLong(IntPtr hWnd, int nIndex);
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, UInt32 dwNewLong);
+
         const string version = "Alpha 0.0.1";
 
         public static void alwaysonbottom(Window F)
@@ -133,12 +136,16 @@ namespace WPF.Massager
         private void setnick(string s)
         {
             string old = username;
-            if (s != "") username = s;
+            if (s != "") username = s[0].ToString().ToUpper() + s.Substring(1);
             SystemMassageColor("----------------------------------------\n");
             SystemMassageColor("YOU NAME UPDATE\n");
-            SystemMassageColor("NEW NAME:"+username+"\n");
+            SystemMassageColor("NEW NAME:" + username + "\n");
             SystemMassageColor("OLD NAME:" + old + "\n");
             SystemMassageColor("----------------------------------------\n");
+            if (startinfo[0] == true)
+            {
+                clientsend("infomsg\0username\0" + username);
+            }
         }
 
         private bool informmsg(string s)
@@ -175,11 +182,11 @@ namespace WPF.Massager
         {
             switch (s)
             {
-                case "arial": Massage.FontFamily = Massages.FontFamily = new FontFamily("Arial"); return;
-                case "courier new": Massage.FontFamily = Massages.FontFamily = new FontFamily("Courier New"); return;
+                case "arial": Massage.FontFamily = new FontFamily("Arial"); return;
+                case "courier new": Massage.FontFamily = new FontFamily("Courier New"); return;
                 case "calibri": Massages.FontFamily = new FontFamily("Calibri"); return;
-                case "impact": Massage.FontFamily = Massages.FontFamily = new FontFamily("Impact"); return;
-                case "comic sans mS": Massage.FontFamily = Massages.FontFamily = new FontFamily("Comic Sans MS"); return;
+                case "impact": Massage.FontFamily = new FontFamily("Impact"); return;
+                case "comic sans mS": Massage.FontFamily = new FontFamily("Comic Sans MS"); return;
                 case "list": SystemMassageColor("----------------------------------------\n"); SystemMassageColor("FONTS LIST\nArial\nCourier New\nCalibri\nImpact\nComic Sans MS\n"); SystemMassageColor("----------------------------------------\n"); return;
 
             }
@@ -193,7 +200,7 @@ namespace WPF.Massager
             if (C.Length == 3 && byte.TryParse(C[0],out R)&& byte.TryParse(C[1], out G) && byte.TryParse(C[2], out B)) {
                 Massage.SelectionBrush = this.Background = new SolidColorBrush(Color.FromRgb(R, G, B));
                 this.Background.Opacity = op;
-                Massages.Foreground = Massage.Foreground = new SolidColorBrush(Color.FromRgb((byte)(255-R), (byte)(255 - G), (byte)(255 - B)));
+                Massage.Foreground = new SolidColorBrush(Color.FromRgb((byte)(255-R), (byte)(255 - G), (byte)(255 - B)));
             }
         }
 
@@ -285,6 +292,7 @@ namespace WPF.Massager
                     case "/pacity": setbgopas(com[1]); Massage.Text = ""; break;
                     case "//hl":
                     case "/help": help(); Massage.Text = ""; break;
+                    //case "/?testuserlist": string[] s = { "infomsg", "userlist", "5","Alex (127.0.0.1:11221)", "Make (127.0.0.2:11221)", "Lisa (127.0.0.3:11221)", "Bob (127.0.0.4:11221)", "Same (127.0.0.5:11221)" }; updateuserlist(s); break;
                     default: Massage.Text = "/help"; Massage.SelectAll(); break;
                 }
             }
@@ -292,8 +300,16 @@ namespace WPF.Massager
             {
                 if (startinfo[0] == true)
                 {
-                    clientsend(username + "\0" + Massage.Text);
-                    Massage.Text = "";
+                    if (username.Trim(' ','\n','\r') != "" && !username.Contains("\0"))
+                    {
+                        clientsend(username + "\0" + Massage.Text);
+                        Massage.Text = "";
+                    }
+                    else
+                    {
+                        Massage.Text = "/setnick";
+                        Massage.SelectAll();
+                    }
                 }
                 else
                 {
@@ -371,21 +387,53 @@ namespace WPF.Massager
             int id = (int)o;
             TcpClient client;
             lock (_lock) client = list_clients[id];
-            while (true)
+            try
             {
-                NetworkStream stream = client.GetStream();
-                byte[] buffer = new byte[1024 * 4];
-                int byte_count = stream.Read(buffer, 0, buffer.Length);
-                if (byte_count == 0)
+                while (true)
                 {
-                    break;
+                    NetworkStream stream = client.GetStream();
+                    byte[] buffer = new byte[1024 * 4];
+                    int byte_count = stream.Read(buffer, 0, buffer.Length);
+                    if (byte_count == 0)
+                    {
+                        break;
+                    }
+                    string data = Encoding.UTF8.GetString(buffer, 0, buffer.Length);
+                    if (data.StartsWith("infomsg\0"))
+                    {
+                        string[] args = data.Split('\0');
+                        switch (args[1])
+                        {
+                            case "username": if (list_clients_name.ContainsKey(id)) { list_clients_name.Remove(id); } list_clients_name.Add(id, args[2]); broadcast("infomsg\0userlist\0" + clientliststring()); break;
+                        }
+                    }
+                    else
+                    {
+                        broadcast(data);
+                    }
                 }
-                string data = Encoding.UTF8.GetString(buffer, 0, byte_count);
-                broadcast(data);
+                lock (_lock) list_clients.Remove(id);
+                client.Client.Shutdown(SocketShutdown.Both);
+                client.Close();
             }
-            lock (_lock) list_clients.Remove(id);
-            client.Client.Shutdown(SocketShutdown.Both);
-            client.Close();
+            catch
+            {
+                lock (_lock) list_clients.Remove(id);
+                list_clients_name.Remove(id);
+                broadcast("infomsg\0userlist\0" + clientliststring());
+            }
+        }
+
+        private static string clientliststring()
+        {
+            string cl = null;
+            cl += list_clients_name.Count.ToString() + '\0';
+            foreach (KeyValuePair<int, string> s in list_clients_name)
+            {
+                string ip = list_clients[s.Key].Client.LocalEndPoint.ToString();
+                cl += s.Value + " ("+ip+")"+'\0';
+            }
+            return cl;
         }
 
         private static void broadcast(string data)
@@ -424,6 +472,7 @@ namespace WPF.Massager
                 Thread thread = new Thread(o => ReceiveData((TcpClient)o));
                 thread.Start(client);
                 startinfo[0] = true;
+                clientsend("infomsg\0username\0" + username);
             }
             catch
             {
@@ -445,7 +494,28 @@ namespace WPF.Massager
             while ((byte_count = ns.Read(receivedBytes, 0, receivedBytes.Length)) > 0)
             {
                 string s = Encoding.UTF8.GetString(receivedBytes, 0, byte_count);
-                newmsg(s);
+                if (s.StartsWith("infomsg\0"))
+                {
+                    string[] args = s.Split('\0');
+                    switch (args[1])
+                    {
+                        case "userlist": updateuserlist(args); break;
+                    }
+                }
+                else
+                {
+                    newmsg(s);
+                }
+            }
+        }
+
+        private void updateuserlist(string[] list)
+        {
+            Dispatcher.Invoke(() => usersbox.Document = new FlowDocument());
+            Dispatcher.Invoke(() => usersbox.AppendText("\r\n"));
+            for (int i = 3; i < 3 + int.Parse(list[2]); i++)
+            {
+                Dispatcher.Invoke(() => AppendColorText(usersbox, MassageToEndMassage(list[i],0), Brushes.White));
             }
         }
 
@@ -483,6 +553,32 @@ namespace WPF.Massager
             {
                 int X = (int)e.GetPosition(this).X;
                 if (X > 150) Left += Math.Abs(150-X)/10; else if (X < 150) Left -= Math.Abs(150 - X)/10;
+            }
+        }
+
+        private void userboxbutton_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
+            {
+                if (e.GetPosition(this).Y < this.Height - userboxbutton_Copy.Margin.Bottom - Height/3*2 && e.GetPosition(this).Y > -1)
+                {
+                    userboxbutton.Margin = new Thickness(-1, e.GetPosition(this).Y -1 , -1, 0);
+                    usersbox.Height = userboxbutton.Margin.Top + 1;
+                    Massages.Margin = new Thickness(0, userboxbutton.Margin.Top + 10, 0, Massages.Margin.Bottom);
+                }
+            }
+        }
+
+        private void userboxbutton_Copy_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
+            {
+                if ( e.GetPosition(this).Y > userboxbutton.Margin.Top + Height/3*2 && e.GetPosition(this).Y < this.Height - 46)
+                {
+                    userboxbutton_Copy.Margin = new Thickness(-1, 0, -1, this.Height - e.GetPosition(this).Y);
+                    Massage.Height = userboxbutton_Copy.Margin.Bottom;
+                    Massages.Margin = new Thickness(0, Massages.Margin.Top, 0, userboxbutton_Copy.Margin.Bottom + 10);
+                }
             }
         }
     }
