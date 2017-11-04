@@ -11,6 +11,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace WPF.Massager
 {
@@ -27,6 +28,7 @@ namespace WPF.Massager
         private static extern UInt32 GetWindowLong(IntPtr hWnd, int nIndex);
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, UInt32 dwNewLong);
+        const string version = "0.0.1";
 
         public static void alwaysonbottom(Window F)
         {
@@ -57,6 +59,7 @@ namespace WPF.Massager
         {
             InitializeComponent();
             ElementSetUp();
+            delloldversion();
         }
 
         private void Window_Activated(object sender, EventArgs e)
@@ -220,13 +223,34 @@ namespace WPF.Massager
             SystemMassageColor("----------------------------------------\n");
         }
 
+        private void delloldversion()
+        {
+            string app = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            if (File.Exists(app+".old"))
+            {
+                File.Delete(app+".old");
+                SystemMassageColor("----------------------------------------\n");
+                SystemMassageColor("COMPLETE UPDATE\n");
+                SystemMassageColor("YOU VERSION:" + version + "\n");
+                SystemMassageColor("----------------------------------------\n");
+            }
+        }
+
         private void updateexe()
         {
+            SystemMassageColor("----------------------------------------\n");
+            SystemMassageColor("START UPDATE\n");
+            SystemMassageColor("YOU VERSION:"+version+"\n");
+            SystemMassageColor("----------------------------------------\n");
             string app = System.Reflection.Assembly.GetExecutingAssembly().Location;
             File.Move(app, app + ".old");
             WebClient GIT = new WebClient();
-            GIT.DownloadFile("https://github.com/AxHamis/WPF.Massager/tree/master/WPF.Massager/bin/Debug/WPF.Massager.exe", app);
-            File.Delete(app + ".old");
+            GIT.DownloadFile("https://github.com/AxHamis/WPF.Massager/blob/master/WPF.Massager/bin/Debug/WPF.Massager.exe?raw=true", app);
+            SystemMassageColor("----------------------------------------\n");
+            SystemMassageColor("RESTART\n");
+            SystemMassageColor("----------------------------------------\n");
+            Process.Start(app);
+            Environment.Exit(0);
         }
 
         private void Button_Click()
