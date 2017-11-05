@@ -34,7 +34,7 @@ namespace WPF.Massager
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, UInt32 dwNewLong);
 
-        const string version = "Alpha 0.1.0";
+        const string version = "Alpha 0.1.1";
 
         public static void alwaysonbottom(Window F)
         {
@@ -533,12 +533,13 @@ namespace WPF.Massager
                 client.Client.Shutdown(SocketShutdown.Both);
                 client.Close();
             }
-            finally
+            catch
             {
-                lock (_lock) list_clients.Remove(id);
-                list_clients_name.Remove(id);
-                broadcast("infomsg\u0001userlist\u0001" + clientliststring());
+                
             }
+            lock (_lock) list_clients.Remove(id);
+            list_clients_name.Remove(id);
+            broadcast("infomsg\u0001userlist\u0001" + clientliststring());
         }
 
         private static void rootcom(string com, string arg, int id)
@@ -646,21 +647,28 @@ namespace WPF.Massager
             byte[] receivedBytes = new byte[1024 * 4];
             int byte_count;
             conected = true;
-            while ((byte_count = ns.Read(receivedBytes, 0, receivedBytes.Length)) > 0)
+            try
             {
-                string s = Encoding.UTF8.GetString(receivedBytes, 0, byte_count);
-                if (s.StartsWith("infomsg\u0001"))
+                while ((byte_count = ns.Read(receivedBytes, 0, receivedBytes.Length)) > 0)
                 {
-                    string[] args = s.Split('\u0001');
-                    switch (args[1])
+                    string s = Encoding.UTF8.GetString(receivedBytes, 0, byte_count);
+                    if (s.StartsWith("infomsg\u0001"))
                     {
-                        case "userlist": updateuserlist(args); break;
+                        string[] args = s.Split('\u0001');
+                        switch (args[1])
+                        {
+                            case "userlist": updateuserlist(args); break;
+                        }
+                    }
+                    else
+                    {
+                        newmsg(s);
                     }
                 }
-                else
-                {
-                    newmsg(s);
-                }
+            }
+            catch
+            {
+
             }
             conected = false;
             usersbox.Document = new FlowDocument();
