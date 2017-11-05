@@ -21,7 +21,7 @@ namespace WPF.Massager
         static readonly Dictionary<int, TcpClient> list_clients = new Dictionary<int, TcpClient>();
         static readonly Dictionary<int, string> list_clients_name = new Dictionary<int, string>();
         static NetworkStream nscl = null;
-        public static String username = "";
+        public static String username = "#FFFFFF\u0002User";
 
         bool[] startinfo = new bool[3];
         [DllImport("user32.dll")]
@@ -31,7 +31,7 @@ namespace WPF.Massager
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, UInt32 dwNewLong);
 
-        const string version = "Alpha 0.0.4";
+        const string version = "Alpha 0.0.5";
 
         public static void alwaysonbottom(Window F)
         {
@@ -113,44 +113,45 @@ namespace WPF.Massager
             return endmsg + "\n";
         }
 
-        private void AppendColorText(RichTextBox box, string text, Brush color)
+        private void AppendColorText(RichTextBox box, string text, Color color)
         {
             try
             {
                 TextRange tr = new TextRange(box.Document.ContentEnd, box.Document.ContentEnd);
                 tr.Text = text;
-                tr.ApplyPropertyValue(TextElement.ForegroundProperty, color);
+                tr.ApplyPropertyValue(TextElement.ForegroundProperty, new SolidColorBrush(color));
             }
             catch
             {
-
+                int i = 0;
             }
         }
 
         private void SystemMassageColor(string s)
         {
-            Dispatcher.Invoke(() => AppendColorText(Massages,s, Brushes.Orange));
+            Dispatcher.Invoke(() => AppendColorText(Massages,s, Brushes.Orange.Color));
             Dispatcher.Invoke(() => Massages.ScrollToEnd());
         }
 
         private void setnick(string s)
         {
-            string old = username;
-            username = s[0].ToString().ToUpper() + s.Substring(1);
+            string[] old = username.Split('\u0002');
+            string nick = s[0].ToString().ToUpper() + s.Substring(1);
+            username = old[0]+'\u0002'+nick;
             SystemMassageColor("----------------------------------------\n");
             SystemMassageColor("YOU NAME UPDATE\n");
-            SystemMassageColor("NEW NAME:" + username + "\n");
-            SystemMassageColor("OLD NAME:" + old + "\n");
+            SystemMassageColor("NEW NAME:" + nick + "\n");
+            SystemMassageColor("OLD NAME:" + old[1] + "\n");
             SystemMassageColor("----------------------------------------\n");
             if (startinfo[0] == true)
             {
-                clientsend("infomsg\0username\0" + username);
+                clientsend("infomsg\u0001username\u0001" + username);
             }
         }
 
         private bool informmsg(string s)
         {
-            if (s.Trim('\n', '\r', ' ', '\0', '.').Length > 0) return true; else return false;
+            if (s.Trim('\n', '\r', ' ', '\u0001', '.').Length > 0) return true; else return false;
         }
 
         private void positionwin(string p)
@@ -191,12 +192,43 @@ namespace WPF.Massager
         private void setbgcolor(string cl)
         {
             string[] C = cl.Split(' ');
-            Double op = this.Background.Opacity;
+            double op = this.Background.Opacity;
             byte R, G, B;
             if (C.Length == 3 && byte.TryParse(C[0],out R)&& byte.TryParse(C[1], out G) && byte.TryParse(C[2], out B)) {
                 Massage.SelectionBrush = this.Background = new SolidColorBrush(Color.FromRgb(R, G, B));
                 this.Background.Opacity = op;
-                Massage.Foreground = new SolidColorBrush(Color.FromRgb((byte)(255-R), (byte)(255 - G), (byte)(255 - B)));
+            }
+        }
+
+        private void setfgcolor(string cl)
+        {
+            string[] C = cl.Split(' ');
+            byte R, G, B;
+            if (C.Length == 3 && byte.TryParse(C[0], out R) && byte.TryParse(C[1], out G) && byte.TryParse(C[2], out B))
+            {
+                Massage.Foreground = new SolidColorBrush(Color.FromRgb(R,G,B));
+            }
+        }
+
+        private void colornick(string cl)
+        {
+            string[] C = cl.Split(' ');
+            byte R, G, B;
+            if (C.Length == 3 && byte.TryParse(C[0], out R) && byte.TryParse(C[1], out G) && byte.TryParse(C[2], out B))
+            {
+                SolidColorBrush Br = new SolidColorBrush(Color.FromRgb(R, G, B));
+                string[] userid = username.Split('\u0002');
+                username = Br.ToString() + '\u0002' + userid[1];
+                SystemMassageColor("----------------------------------------\n");
+                SystemMassageColor("YOU NAME COLOR UPDATE\n");
+                SystemMassageColor("NEW NAME COLOR:" + Br.ToString() + "\n");
+                SystemMassageColor("OLD NAME COLOR:" + userid[0] + "\n");
+                SystemMassageColor("----------------------------------------\n");
+                if (startinfo[0] == true)
+                {
+                    clientsend("infomsg\u0001username\u0001" + username);
+                }
+
             }
         }
 
@@ -224,6 +256,10 @@ namespace WPF.Massager
             SystemMassageColor("/background (//bg)\n");
             SystemMassageColor("/opacity (//op)\n");
             SystemMassageColor("/update (//up)\n");
+            SystemMassageColor("/winappmode (//wa)\n");
+            SystemMassageColor("/foreground (//fg)\n");
+            SystemMassageColor("/colornick (//cn)\n");
+            SystemMassageColor("/restart (//rs)\n");
             SystemMassageColor("----------------------------------------\n");
         }
 
@@ -247,6 +283,14 @@ namespace WPF.Massager
             File.Move(app, app + ".old");
             WebClient GIT = new WebClient();
             GIT.DownloadFile("https://github.com/AxHamis/WPF.Massager/blob/master/WPF.Massager/bin/Debug/WPF.Massager.exe?raw=true", app);
+            Process.Start(app);
+            Environment.Exit(0);
+        }
+
+        private void restartexe()
+        {
+            Thread.Sleep(1000);
+            string app = System.Reflection.Assembly.GetExecutingAssembly().Location;
             Process.Start(app);
             Environment.Exit(0);
         }
@@ -299,8 +343,12 @@ namespace WPF.Massager
                 {
                     case "//up":
                     case "/update": Thread UP = new Thread(updateexe); SystemMassageColor("----------------------------------------\n"+"START UPDATE\n"+"YOU VERSION:"+version+"\n"+"----------------------------------------\n"); UP.Start(); Massage.Text = ""; break;
+                    case "//rs":
+                    case "/restart": Thread RS = new Thread(restartexe); SystemMassageColor("----------------------------------------\n" + "RESTARTING\n" + "----------------------------------------\n"); RS.Start(); Massage.Text = ""; break;
                     case "//sn":
                     case "/setnick": setnick(com[1]); Massage.Text = ""; break;
+                    case "//cn":
+                    case "/colornick": colornick(com[1]); Massage.Text = ""; break;
                     case "//ss":
                     case "/startserver": startserver(); Massage.Text = ""; break;
                     case "//sc":
@@ -315,13 +363,15 @@ namespace WPF.Massager
                     case "/font": setallfont(com[1]); Massage.Text = ""; break;
                     case "//bg":
                     case "/background": setbgcolor(com[1]); Massage.Text = ""; break;
+                    case "//fg":
+                    case "/foreground": setfgcolor(com[1]); Massage.Text = ""; break;
                     case "//op":
                     case "/opacity": setbgopas(com[1]); Massage.Text = ""; break;
                     case "//wa":
                     case "/winappmode": winappmode(com[1]); Massage.Text = ""; break;
                     case "//hl":
                     case "/help": help(); Massage.Text = ""; break;
-                    //case "/?testuserlist": string[] s = { "infomsg", "userlist", "5","Alex (127.0.0.1:11221)", "Make (127.0.0.2:11221)", "Lisa (127.0.0.3:11221)", "Bob (127.0.0.4:11221)", "Same (127.0.0.5:11221)" }; updateuserlist(s); break;
+                    case "/?testuserlist": string[] s = { "infomsg", "userlist", "5", "#DAA520\u0002Alex\u0002(127.0.0.1:11221)", "#D53032\u0002Make\u0002(127.0.0.2:11221)", "#9932CC\u0002Lisa\u0002(127.0.0.3:11221)", "#2A52BE\u0002Bob\u0002(127.0.0.4:11221)", "#32CD32\u0002Same\u0002(127.0.0.5:11221)" }; updateuserlist(s); break;
                     default: Massage.Text = "/help"; Massage.SelectAll(); break;
                 }
             }
@@ -329,9 +379,9 @@ namespace WPF.Massager
             {
                 if (startinfo[0] == true)
                 {
-                    if (username.Trim(' ','\n','\r') != "" && !username.Contains("\0"))
+                    if (username.Trim(' ','\n','\r') != "" && !username.Contains("\u0001"))
                     {
-                        clientsend(username + "\0" + Massage.Text);
+                        clientsend(username + "\u0001" + Massage.Text);
                         Massage.Text = "";
                     }
                     else
@@ -350,13 +400,13 @@ namespace WPF.Massager
 
         private void newmsg(string masage)
         {
-            string[] msg = masage.Split('\0');
-            string userid = msg[0];
+            string[] msg = masage.Split('\u0001');
+            string useridargs = msg[0];
+            string[] userid = useridargs.Split('\u0002');
             masage = msg[1];
-            Brush B;
-            if (userid == username) B = Brushes.DeepPink; else B = Brushes.ForestGreen;
-            Dispatcher.Invoke(() => AppendColorText(Massages, userid, B));
-            Dispatcher.Invoke(() => AppendColorText(Massages, MassageToEndMassage(":" + masage, userid.Length), Brushes.White));
+            Color cl = (Color)ColorConverter.ConvertFromString(userid[0]);
+            Dispatcher.Invoke(() => AppendColorText(Massages, userid[1], cl));
+            Dispatcher.Invoke(() => AppendColorText(Massages, MassageToEndMassage(":" + masage, userid.Length), (Color)ColorConverter.ConvertFromString(Massage.Foreground.ToString())));
             this.Dispatcher.Invoke(() => Massages.ScrollToEnd());
         }
 
@@ -428,12 +478,13 @@ namespace WPF.Massager
                         break;
                     }
                     string data = Encoding.UTF8.GetString(buffer, 0, buffer.Length);
-                    if (data.StartsWith("infomsg\0"))
+                    data = data.Split('\0')[0];
+                    if (data.StartsWith("infomsg\u0001"))
                     {
-                        string[] args = data.Split('\0');
+                        string[] args = data.Split('\u0001');
                         switch (args[1])
                         {
-                            case "username": if (list_clients_name.ContainsKey(id)) { list_clients_name.Remove(id); } list_clients_name.Add(id, args[2]); broadcast("infomsg\0userlist\0" + clientliststring()); break;
+                            case "username": if (list_clients_name.ContainsKey(id)) { list_clients_name.Remove(id); } list_clients_name.Add(id, args[2]); broadcast("infomsg\u0001userlist\u0001" + clientliststring()); break;
                         }
                     }
                     else
@@ -449,18 +500,18 @@ namespace WPF.Massager
             {
                 lock (_lock) list_clients.Remove(id);
                 list_clients_name.Remove(id);
-                broadcast("infomsg\0userlist\0" + clientliststring());
+                broadcast("infomsg\u0001userlist\u0001" + clientliststring());
             }
         }
 
         private static string clientliststring()
         {
             string cl = null;
-            cl += list_clients_name.Count.ToString() + '\0';
+            cl += list_clients_name.Count.ToString() + '\u0001';
             foreach (KeyValuePair<int, string> s in list_clients_name)
             {
                 string ip = list_clients[s.Key].Client.RemoteEndPoint.ToString();
-                cl += s.Value + " ("+ip+")"+'\0';
+                cl += s.Value + "\u0002("+ip+")"+'\u0001';
             }
             return cl;
         }
@@ -501,7 +552,7 @@ namespace WPF.Massager
                 Thread thread = new Thread(o => ReceiveData((TcpClient)o));
                 thread.Start(client);
                 startinfo[0] = true;
-                clientsend("infomsg\0username\0" + username);
+                clientsend("infomsg\u0001username\u0001" + username);
             }
             catch
             {
@@ -520,14 +571,12 @@ namespace WPF.Massager
             NetworkStream ns = client.GetStream();
             byte[] receivedBytes = new byte[1024 * 4];
             int byte_count;
-            try
-            {
                 while ((byte_count = ns.Read(receivedBytes, 0, receivedBytes.Length)) > 0)
                 {
                     string s = Encoding.UTF8.GetString(receivedBytes, 0, byte_count);
-                    if (s.StartsWith("infomsg\0"))
+                    if (s.StartsWith("infomsg\u0001"))
                     {
-                        string[] args = s.Split('\0');
+                        string[] args = s.Split('\u0001');
                         switch (args[1])
                         {
                             case "userlist": updateuserlist(args); break;
@@ -538,11 +587,6 @@ namespace WPF.Massager
                         newmsg(s);
                     }
                 }
-            }
-            catch
-            {
-
-            }
         }
 
         private void updateuserlist(string[] list)
@@ -551,7 +595,10 @@ namespace WPF.Massager
             Dispatcher.Invoke(() => usersbox.AppendText("\r\n"));
             for (int i = 3; i < 3 + int.Parse(list[2]); i++)
             {
-                Dispatcher.Invoke(() => AppendColorText(usersbox, MassageToEndMassage(list[i],0), Brushes.White));
+                string[] s = list[i].Split('\u0002');
+                Color cl = (Color)ColorConverter.ConvertFromString(s[0]);
+                Dispatcher.Invoke(() => AppendColorText(usersbox, s[1]+' ', cl));
+                Dispatcher.Invoke(() => AppendColorText(usersbox, s[2]+'\n', Brushes.Gray.Color));
             }
         }
 
