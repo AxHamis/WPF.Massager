@@ -19,8 +19,11 @@ namespace WPF.Massager
     {
         static readonly object _lock = new object();
         static readonly Dictionary<int, TcpClient> list_clients = new Dictionary<int, TcpClient>();
+        static readonly List<string> ban_list_clients = new List<string>();
         static readonly Dictionary<int, string> list_clients_name = new Dictionary<int, string>();
+        static readonly List<int> rootuser = new List<int>(); 
         static NetworkStream nscl = null;
+        static Boolean conected = false;
         public static String username = "#FFFFFF\u0002User";
 
         bool[] startinfo = new bool[3];
@@ -31,7 +34,7 @@ namespace WPF.Massager
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, UInt32 dwNewLong);
 
-        const string version = "Alpha 0.0.5";
+        const string version = "Alpha 0.1.0";
 
         public static void alwaysonbottom(Window F)
         {
@@ -260,6 +263,9 @@ namespace WPF.Massager
             SystemMassageColor("/foreground (//fg)\n");
             SystemMassageColor("/colornick (//cn)\n");
             SystemMassageColor("/restart (//rs)\n");
+            SystemMassageColor("/sms (//sm)\n");
+            SystemMassageColor("/root (//ro)\n");
+            SystemMassageColor("/ban (//bn)\n");
             SystemMassageColor("----------------------------------------\n");
         }
 
@@ -325,12 +331,35 @@ namespace WPF.Massager
             }
         }
 
+        private void sendprivate(string s)
+        {
+            int idindex = s.IndexOf(' ');
+            if (username.Trim(' ', '\n', '\r') != "" && !username.Contains("\u0001"))
+            {
+                clientsend("infomsg\u0001privatemsg\u0001" + s.Remove(idindex,s.Length-idindex) + "\u0001" + username + "\u0001" + s.Substring(idindex+1));
+                Massage.Text = "";
+            }
+        }
+
+        private void banusercomand(string s)
+        {
+            clientsend("infomsg\u0001root\u0001ban\u0001" + s);
+        }
+
+        private void addtoroot(string s)
+        {
+            int id;
+            if(int.TryParse(s, out id))
+            {
+                rootuser.Add(id);
+            }
+        }
+
         private void Button_Click()
         {
             if (!informmsg(Massage.Text)) return;
             if (Massage.Text[0] == '/')
             {
-                Massage.Text = Massage.Text.ToLower();
                 string[] com = Massage.Text.Split();
                 if (com.Length > 2)
                 {
@@ -369,6 +398,12 @@ namespace WPF.Massager
                     case "/opacity": setbgopas(com[1]); Massage.Text = ""; break;
                     case "//wa":
                     case "/winappmode": winappmode(com[1]); Massage.Text = ""; break;
+                    case "//sm":
+                    case "/sms": sendprivate(com[1]); Massage.Text = ""; break;
+                    case "//bn":
+                    case "/ban": banusercomand(com[1]); Massage.Text = ""; break;
+                    case "//ro":
+                    case "/root": addtoroot(com[1]); Massage.Text = ""; break;
                     case "//hl":
                     case "/help": help(); Massage.Text = ""; break;
                     case "/?testuserlist": string[] s = { "infomsg", "userlist", "5", "#DAA520\u0002Alex\u0002(127.0.0.1:11221)", "#D53032\u0002Make\u0002(127.0.0.2:11221)", "#9932CC\u0002Lisa\u0002(127.0.0.3:11221)", "#2A52BE\u0002Bob\u0002(127.0.0.4:11221)", "#32CD32\u0002Same\u0002(127.0.0.5:11221)" }; updateuserlist(s); break;
@@ -377,7 +412,7 @@ namespace WPF.Massager
             }
             else
             {
-                if (startinfo[0] == true)
+                if (startinfo[0] && conected)
                 {
                     if (username.Trim(' ','\n','\r') != "" && !username.Contains("\u0001"))
                     {
@@ -470,6 +505,7 @@ namespace WPF.Massager
             {
                 while (true)
                 {
+                    if (ban_list_clients.Contains(client.Client.RemoteEndPoint.ToString().Split(':')[0])) break;
                     NetworkStream stream = client.GetStream();
                     byte[] buffer = new byte[1024 * 4];
                     int byte_count = stream.Read(buffer, 0, buffer.Length);
@@ -485,6 +521,8 @@ namespace WPF.Massager
                         switch (args[1])
                         {
                             case "username": if (list_clients_name.ContainsKey(id)) { list_clients_name.Remove(id); } list_clients_name.Add(id, args[2]); broadcast("infomsg\u0001userlist\u0001" + clientliststring()); break;
+                            case "privatemsg": privatemassage(data.Remove(0,20+args[2].Length), args[2], id); break;
+                            case "root": rootcom(args[2],args[3],id); break;
                         }
                     }
                     else
@@ -492,16 +530,53 @@ namespace WPF.Massager
                         broadcast(data);
                     }
                 }
-                lock (_lock) list_clients.Remove(id);
                 client.Client.Shutdown(SocketShutdown.Both);
                 client.Close();
             }
-            catch
+            finally
             {
                 lock (_lock) list_clients.Remove(id);
                 list_clients_name.Remove(id);
                 broadcast("infomsg\u0001userlist\u0001" + clientliststring());
             }
+        }
+
+        private static void rootcom(string com, string arg, int id)
+        {
+            if (rootuser.Contains(id))
+            {
+                switch (com)
+                {
+                    case "ban": banuserserver(arg); break;
+                }
+            }
+        }
+
+        private static void banuserserver(string id)
+        {
+            int banid;
+            TcpClient ip;
+            if (int.TryParse(id,out banid) && list_clients.TryGetValue(banid,out ip))
+            {
+                ban_list_clients.Add(ip.Client.RemoteEndPoint.ToString().Split(':')[0]);
+            }
+        }
+
+        private static void privatemassage(string s, string id, int idi)
+        {
+            int ido;
+            if (int.TryParse(id, out ido) && list_clients.ContainsKey(ido))
+            {
+                byte[] buffer = Encoding.UTF8.GetBytes(s);
+                TcpClient C;
+                list_clients.TryGetValue(ido, out C);
+                NetworkStream streamo = C.GetStream();
+                streamo.Write(buffer, 0, buffer.Length);
+                list_clients.TryGetValue(idi, out C);
+                NetworkStream streami = C.GetStream();
+                streami.Write(buffer, 0, buffer.Length);
+            }
+            
         }
 
         private static string clientliststring()
@@ -510,8 +585,7 @@ namespace WPF.Massager
             cl += list_clients_name.Count.ToString() + '\u0001';
             foreach (KeyValuePair<int, string> s in list_clients_name)
             {
-                string ip = list_clients[s.Key].Client.RemoteEndPoint.ToString();
-                cl += s.Value + "\u0002("+ip+")"+'\u0001';
+                cl += s.Value + "\u0002["+s.Key+"]"+'\u0001';
             }
             return cl;
         }
@@ -531,8 +605,8 @@ namespace WPF.Massager
 
         private void clientsend(string s)
         {
-            byte[] buffer = Encoding.UTF8.GetBytes(s);
-            nscl.Write(buffer, 0, buffer.Length);
+                byte[] buffer = Encoding.UTF8.GetBytes(s);
+                nscl.Write(buffer, 0, buffer.Length);
         }
 
         private void startclient(string strip)
@@ -571,22 +645,25 @@ namespace WPF.Massager
             NetworkStream ns = client.GetStream();
             byte[] receivedBytes = new byte[1024 * 4];
             int byte_count;
-                while ((byte_count = ns.Read(receivedBytes, 0, receivedBytes.Length)) > 0)
+            conected = true;
+            while ((byte_count = ns.Read(receivedBytes, 0, receivedBytes.Length)) > 0)
+            {
+                string s = Encoding.UTF8.GetString(receivedBytes, 0, byte_count);
+                if (s.StartsWith("infomsg\u0001"))
                 {
-                    string s = Encoding.UTF8.GetString(receivedBytes, 0, byte_count);
-                    if (s.StartsWith("infomsg\u0001"))
+                    string[] args = s.Split('\u0001');
+                    switch (args[1])
                     {
-                        string[] args = s.Split('\u0001');
-                        switch (args[1])
-                        {
-                            case "userlist": updateuserlist(args); break;
-                        }
-                    }
-                    else
-                    {
-                        newmsg(s);
+                        case "userlist": updateuserlist(args); break;
                     }
                 }
+                else
+                {
+                    newmsg(s);
+                }
+            }
+            conected = false;
+            usersbox.Document = new FlowDocument();
         }
 
         private void updateuserlist(string[] list)
@@ -598,7 +675,7 @@ namespace WPF.Massager
                 string[] s = list[i].Split('\u0002');
                 Color cl = (Color)ColorConverter.ConvertFromString(s[0]);
                 Dispatcher.Invoke(() => AppendColorText(usersbox, s[1]+' ', cl));
-                Dispatcher.Invoke(() => AppendColorText(usersbox, s[2]+'\n', Brushes.Gray.Color));
+                Dispatcher.Invoke(() => AppendColorText(usersbox, s[2]+'\n', Color.FromRgb((byte)(cl.R/2), (byte)(cl.G/2), (byte)(cl.B/2))));
             }
         }
 
