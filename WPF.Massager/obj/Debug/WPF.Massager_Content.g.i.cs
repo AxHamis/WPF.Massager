@@ -8,6 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("web_hi_res_512.ico")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("ico.ico")]
 
 
