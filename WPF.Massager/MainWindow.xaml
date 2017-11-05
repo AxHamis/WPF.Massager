@@ -16,7 +16,7 @@
                             <Border BorderBrush="Transparent" BorderThickness="1" Background="{TemplateBinding Background}">
                                 <ScrollViewer x:Name="PART_ContentHost" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
                             </Border>
-                            <TextBlock Margin="3,1,0,0" x:Name="WaterMarkLabel" Text="{TemplateBinding Tag}" Visibility="Collapsed" Foreground="Gray" FontFamily="Courier New"/>
+                            <TextBlock Margin="3,1,0,0" x:Name="WaterMarkLabel" Text="{TemplateBinding Tag}" Visibility="Collapsed" Foreground="Gray" FontFamily="{TemplateBinding FontFamily}"/>
                         </Grid>
                         <ControlTemplate.Triggers>
                             <MultiTrigger>

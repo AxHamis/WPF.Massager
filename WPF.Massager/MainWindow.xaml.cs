@@ -186,10 +186,10 @@ namespace WPF.Massager
                 case "courier new": Massage.FontFamily = new FontFamily("Courier New"); return;
                 case "calibri": Massages.FontFamily = new FontFamily("Calibri"); return;
                 case "impact": Massage.FontFamily = new FontFamily("Impact"); return;
-                case "comic sans mS": Massage.FontFamily = new FontFamily("Comic Sans MS"); return;
+                case "comic sans ms": Massage.FontFamily = new FontFamily("Comic Sans MS"); return;
                 case "list": SystemMassageColor("----------------------------------------\n"); SystemMassageColor("FONTS LIST\nArial\nCourier New\nCalibri\nImpact\nComic Sans MS\n"); SystemMassageColor("----------------------------------------\n"); return;
-
             }
+            Massage.UpdateLayout();
         }
 
         private void setbgcolor(string cl)
