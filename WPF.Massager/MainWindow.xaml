@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPF.Massager"
         mc:Ignorable="d"
-        Title="MainWindow" Height="798" Width="300" Activated="Window_Activated" AllowsTransparency="True" WindowStyle="None" ResizeMode="NoResize" Foreground="{x:Null}" Padding="0" Margin="0">
+        Title="MainWindow" Height="798" Width="300" Activated="Window_Activated" ResizeMode="NoResize" Foreground="{x:Null}" Padding="0" Margin="0" WindowStyle="None" AllowsTransparency="True">
     <Window.Resources>
         <Style x:Key="TextBoxStyle1" BasedOn="{x:Null}" TargetType="{x:Type TextBox}">
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
@@ -70,5 +70,28 @@
         </RichTextBox>
         <Button x:Name="userboxbutton" Content="Button" VerticalAlignment="Top" Height="10" Foreground="{x:Null}" BorderBrush="{x:Null}" Background="{Binding Background, ElementName=window}" Style="{DynamicResource ButtonStyle1}" Padding="0" Margin="-1,-1,-1,0" PreviewMouseMove="userboxbutton_PreviewMouseMove" Cursor="{Binding Cursor, ElementName=userboxbutton_Copy}"/>
         <Button x:Name="userboxbutton_Copy" Content="Button" Foreground="{x:Null}" BorderBrush="{Binding Background, ElementName=window}" Background="{Binding Background, ElementName=window}" Style="{DynamicResource ButtonStyle1}" Margin="-1,0,-1,46" Height="10" VerticalAlignment="Bottom" Padding="0" PreviewMouseMove="userboxbutton_Copy_PreviewMouseMove" Cursor="SizeNS"/>
+        <Rectangle x:Name="WindowControl" Fill="#FFF4F4F5" Margin="-1,-25,-1,0" Stroke="Black" Height="20" VerticalAlignment="Top" PreviewMouseMove="WindowControl_PreviewMouseMove"/>
+        <Button x:Name="closebutton" Content="" HorizontalAlignment="Right" Margin="{Binding Margin, ElementName=WindowControl}" VerticalAlignment="Top" Width="22" Height="20" BorderBrush="{x:Null}" FontFamily="Calibri" FontSize="16" Click="closebutton_Click">
+            <Button.Style>
+                <Style BasedOn="{x:Null}" TargetType="{x:Type Button}">
+                    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type Button}">
+                                <Border Background="{TemplateBinding Background}" BorderBrush="Transparent" BorderThickness="1"/>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Border.Background" Value="Gray"/>
+                    <Setter Property="Border.Opacity" Value="0.4" />
+                    <Style.Triggers>
+                        <Trigger Property="Border.IsMouseOver" Value="True">
+                            <Setter Property="Border.Background" Value="Red" />
+                            <Setter Property="Border.Opacity" Value="0.4"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+        </Button>
     </Grid>
 </Window>

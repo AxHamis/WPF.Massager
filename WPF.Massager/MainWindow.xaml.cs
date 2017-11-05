@@ -31,7 +31,7 @@ namespace WPF.Massager
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, UInt32 dwNewLong);
 
-        const string version = "Alpha 0.0.3";
+        const string version = "Alpha 0.0.4";
 
         public static void alwaysonbottom(Window F)
         {
@@ -48,16 +48,6 @@ namespace WPF.Massager
         {
             var Handle = new WindowInteropHelper(F).Handle;
             SetWindowLong(Handle, -20, GetWindowLong(Handle, -20) | 0x00000080);
-        }
-
-        struct settings
-        {
-            public FontFamily Font;
-            public Color Color;
-            public double Opacity;
-            public double TopButton;
-            public double BottomButton;
-            public string Username;
         }
 
         private void ElementSetUp()
@@ -146,7 +136,7 @@ namespace WPF.Massager
         private void setnick(string s)
         {
             string old = username;
-            if (s != "") username = s[0].ToString().ToUpper() + s.Substring(1);
+            username = s[0].ToString().ToUpper() + s.Substring(1);
             SystemMassageColor("----------------------------------------\n");
             SystemMassageColor("YOU NAME UPDATE\n");
             SystemMassageColor("NEW NAME:" + username + "\n");
@@ -177,16 +167,10 @@ namespace WPF.Massager
 
         private void borderstyleset(string s)
         {
-            if (s == "fixed")
+            switch (s)
             {
-                startinfo[2] = false;
-                Massages.Cursor = System.Windows.Input.Cursors.Arrow;
-                ElementSetUp();
-            }
-            if (s == "unfixed")
-            {
-                startinfo[2] = true;
-                Massages.Cursor = System.Windows.Input.Cursors.SizeWE;
+                case "fixed": startinfo[2] = false; startinfo[2] = false; ElementSetUp(); break;
+                case "unfixed": startinfo[2] = true; Massages.Cursor = System.Windows.Input.Cursors.SizeWE; break;
             }
         }
 
@@ -267,6 +251,36 @@ namespace WPF.Massager
             Environment.Exit(0);
         }
 
+        private void windowControlSet(bool b)
+        {
+            if (b == true)
+            {
+                WindowControl.Margin = new Thickness(-1,-1,-1,0);
+                usersbox.Margin = new Thickness(0, 19, 0, 0);
+                userboxbutton.Margin = new Thickness(-1, 19, -1, 0);
+                usersbox.Height = 0;
+                Massages.Margin = new Thickness(0, userboxbutton.Margin.Top + 10, 0, Massages.Margin.Bottom);
+                this.Height = this.Height - 300;
+            }
+            else
+            {
+                WindowControl.Margin = new Thickness(-1, -25, -1, 0);
+                usersbox.Margin = new Thickness(0, 0, 0, 0);
+                userboxbutton.Margin = new Thickness(-1, -1, -1, 0);
+                usersbox.Height = 0;
+                Massages.Margin = new Thickness(0, userboxbutton.Margin.Top + 10, 0, Massages.Margin.Bottom);
+            }
+        }
+
+        private void winappmode(string s)
+        {
+            switch (s)
+            {
+                case "on": windowControlSet(true); break;
+                case "off": windowControlSet(false); ElementSetUp(); break;
+            }
+        }
+
         private void Button_Click()
         {
             if (!informmsg(Massage.Text)) return;
@@ -303,6 +317,8 @@ namespace WPF.Massager
                     case "/background": setbgcolor(com[1]); Massage.Text = ""; break;
                     case "//op":
                     case "/opacity": setbgopas(com[1]); Massage.Text = ""; break;
+                    case "//wa":
+                    case "/winappmode": winappmode(com[1]); Massage.Text = ""; break;
                     case "//hl":
                     case "/help": help(); Massage.Text = ""; break;
                     //case "/?testuserlist": string[] s = { "infomsg", "userlist", "5","Alex (127.0.0.1:11221)", "Make (127.0.0.2:11221)", "Lisa (127.0.0.3:11221)", "Bob (127.0.0.4:11221)", "Same (127.0.0.5:11221)" }; updateuserlist(s); break;
@@ -571,8 +587,8 @@ namespace WPF.Massager
         {
             if (startinfo[2] && e.MiddleButton == System.Windows.Input.MouseButtonState.Pressed)
             {
-                int X = (int)e.GetPosition(this).X;
-                if (X > 150) Left += Math.Abs(150-X)/10; else if (X < 150) Left -= Math.Abs(150 - X)/10;
+                var screenPosition = this.PointToScreen(e.GetPosition(this));
+                Left = screenPosition.X - 150;
             }
         }
 
@@ -580,10 +596,10 @@ namespace WPF.Massager
         {
             if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
             {
-                if (e.GetPosition(this).Y < this.Height - userboxbutton_Copy.Margin.Bottom - Height/3*2 && e.GetPosition(this).Y > -1)
+                if (e.GetPosition(this).Y < this.Height - userboxbutton_Copy.Margin.Bottom - Height/3*2 && e.GetPosition(this).Y > WindowControl.Margin.Top + 18)
                 {
                     userboxbutton.Margin = new Thickness(-1, e.GetPosition(this).Y -1 , -1, 0);
-                    usersbox.Height = userboxbutton.Margin.Top + 1;
+                    usersbox.Height = userboxbutton.Margin.Top + 2 - usersbox.Margin.Top;
                     Massages.Margin = new Thickness(0, userboxbutton.Margin.Top + 10, 0, Massages.Margin.Bottom);
                 }
             }
@@ -599,6 +615,21 @@ namespace WPF.Massager
                     Massage.Height = userboxbutton_Copy.Margin.Bottom;
                     Massages.Margin = new Thickness(0, Massages.Margin.Top, 0, userboxbutton_Copy.Margin.Bottom + 10);
                 }
+            }
+        }
+
+        private void closebutton_Click(object sender, RoutedEventArgs e)
+        {
+            Environment.Exit(0);
+        }
+
+        private void WindowControl_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
+            {
+                var screenPosition = this.PointToScreen(e.GetPosition(this));
+                Left = screenPosition.X - 150;
+                Top = screenPosition.Y - 10;
             }
         }
     }
