@@ -671,7 +671,7 @@ namespace WPF.Massager
 
             }
             conected = false;
-            usersbox.Document = new FlowDocument();
+            Dispatcher.Invoke(() => usersbox.Document = new FlowDocument());
         }
 
         private void updateuserlist(string[] list)
