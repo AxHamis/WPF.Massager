@@ -34,7 +34,7 @@ namespace WPF.Massager
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, UInt32 dwNewLong);
 
-        const string version = "Alpha 0.1.1";
+        const string version = "Alpha 0.1.2";
 
         public static void alwaysonbottom(Window F)
         {
@@ -66,6 +66,7 @@ namespace WPF.Massager
             InitializeComponent();
             ElementSetUp();
             delloldversion();
+            loadsetting();
         }
 
         private void Window_Activated(object sender, EventArgs e)
@@ -149,6 +150,42 @@ namespace WPF.Massager
             if (startinfo[0] == true)
             {
                 clientsend("infomsg\u0001username\u0001" + username);
+            }
+        }
+
+        private void savesetting()
+        {
+            string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)+"\\MSG\\";
+            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+            if (File.Exists(path + "msg.conf")) File.Delete(path + "msg.conf");
+            string text = "Config [" + DateTime.UtcNow.ToString() + "]\u0001";
+            text += this.Background.ToString() + "\u0001";
+            text += Massage.Foreground.ToString() + "\u0001";
+            text += Massage.FontFamily.ToString() + "\u0001";
+            text += this.Background.Opacity.ToString() + "\u0001";
+            text += username + "\u0001";
+            File.WriteAllText(path + "msg.conf", text);
+        }
+
+        private void loadsetting()
+        {
+            string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\MSG\\";
+            if (File.Exists(path + "msg.conf"))
+            {
+                string text = File.ReadAllText(path + "msg.conf");
+                string[] args = text.Split('\u0001');
+                try
+                {
+                    this.Background = new BrushConverter().ConvertFromString(args[1]) as Brush;
+                    Massage.Foreground = new BrushConverter().ConvertFromString(args[2]) as Brush;
+                    Massage.FontFamily = new FontFamilyConverter().ConvertFromString(args[3]) as FontFamily;
+                    Background.Opacity = double.Parse(args[4]);
+                    username = args[5];
+                }
+                catch
+                {
+
+                }
             }
         }
 
@@ -290,7 +327,7 @@ namespace WPF.Massager
             WebClient GIT = new WebClient();
             GIT.DownloadFile("https://github.com/AxHamis/WPF.Massager/blob/master/WPF.Massager/bin/Debug/WPF.Massager.exe?raw=true", app);
             Process.Start(app);
-            Environment.Exit(0);
+            this.Close();
         }
 
         private void restartexe()
@@ -298,7 +335,7 @@ namespace WPF.Massager
             Thread.Sleep(1000);
             string app = System.Reflection.Assembly.GetExecutingAssembly().Location;
             Process.Start(app);
-            Environment.Exit(0);
+            this.Close();
         }
 
         private void windowControlSet(bool b)
@@ -383,7 +420,7 @@ namespace WPF.Massager
                     case "//sc":
                     case "/startclient": startclient(com.Length > 1 ? com[1] : "127.0.0.1"); Massage.Text = ""; break;
                     case "//ex":
-                    case "/exit": Massage.Text = ""; Environment.Exit(0); break;
+                    case "/exit": Massage.Text = ""; this.Close(); break;
                     case "//po":
                     case "/position": positionwin(com[1]); Massage.Text = ""; break;
                     case "//bo": 
@@ -752,7 +789,7 @@ namespace WPF.Massager
 
         private void closebutton_Click(object sender, RoutedEventArgs e)
         {
-            Environment.Exit(0);
+            this.Close();
         }
 
         private void WindowControl_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
@@ -763,6 +800,11 @@ namespace WPF.Massager
                 Left = screenPosition.X - 150;
                 Top = screenPosition.Y - 10;
             }
+        }
+
+        private void window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            savesetting();
         }
     }
 }

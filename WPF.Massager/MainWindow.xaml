@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPF.Massager"
         mc:Ignorable="d"
-        Title="MainWindow" Height="798" Width="300" Activated="Window_Activated" ResizeMode="NoResize" Foreground="{x:Null}" Padding="0" Margin="0" WindowStyle="None" AllowsTransparency="True">
+        Title="MainWindow" Height="798" Width="300" Activated="Window_Activated" ResizeMode="NoResize" Foreground="{x:Null}" Padding="0" Margin="0" WindowStyle="None" AllowsTransparency="True" Closing="window_Closing">
     <Window.Resources>
         <Style x:Key="TextBoxStyle1" BasedOn="{x:Null}" TargetType="{x:Type TextBox}">
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
