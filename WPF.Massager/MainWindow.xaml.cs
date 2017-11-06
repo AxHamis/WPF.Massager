@@ -34,7 +34,7 @@ namespace WPF.Massager
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, UInt32 dwNewLong);
 
-        const string version = "Alpha 0.1.3";
+        const string version = "Alpha 0.2.0";
 
         public static void alwaysonbottom(Window F)
         {
@@ -194,27 +194,6 @@ namespace WPF.Massager
             if (s.Trim('\n', '\r', ' ', '\u0001', '.').Length > 0) return true; else return false;
         }
 
-        private void positionwin(string p)
-        {
-            if (p == "right")
-            {
-                Left = SystemParameters.FullPrimaryScreenWidth - Width;
-            }
-            if(p == "left")
-            {
-                Left = 0;
-            }
-        }
-
-        private void borderstyleset(string s)
-        {
-            switch (s)
-            {
-                case "fixed": startinfo[2] = false; startinfo[2] = false; ElementSetUp(); break;
-                case "unfixed": startinfo[2] = true; Massages.Cursor = System.Windows.Input.Cursors.SizeWE; break;
-            }
-        }
-
         private void setallfont(string s)
         {
             switch (s)
@@ -290,8 +269,6 @@ namespace WPF.Massager
             SystemMassageColor("/startserver (//ss)\n");
             SystemMassageColor("/startclient (//sc)\n");
             SystemMassageColor("/exit (//ex)\n");
-            SystemMassageColor("/position (//po)\n");
-            SystemMassageColor("/border (//bo)\n");
             SystemMassageColor("/font (//fo)\n");
             SystemMassageColor("/background (//bg)\n");
             SystemMassageColor("/opacity (//op)\n");
@@ -342,20 +319,16 @@ namespace WPF.Massager
         {
             if (b == true)
             {
-                WindowControl.Margin = new Thickness(-1,-1,-1,0);
-                usersbox.Margin = new Thickness(0, 19, 0, 0);
-                userboxbutton.Margin = new Thickness(-1, 19, -1, 0);
-                usersbox.Height = 0;
-                Massages.Margin = new Thickness(0, userboxbutton.Margin.Top + 10, 0, Massages.Margin.Bottom);
+                WindowControl.Fill = Brushes.White;
+                winappbutton.Width = 22;
+                UpdateElementPosition(66,46);
                 this.Height = this.Height - 300;
             }
             else
             {
-                WindowControl.Margin = new Thickness(-1, -25, -1, 0);
-                usersbox.Margin = new Thickness(0, 0, 0, 0);
-                userboxbutton.Margin = new Thickness(-1, -1, -1, 0);
-                usersbox.Height = 0;
-                Massages.Margin = new Thickness(0, userboxbutton.Margin.Top + 10, 0, Massages.Margin.Bottom);
+                winappbutton.Width = Width - 18;
+                WindowControl.Fill = Brushes.Transparent;
+                UpdateElementPosition(66, 46);
             }
         }
 
@@ -421,10 +394,6 @@ namespace WPF.Massager
                     case "/startclient": startclient(com.Length > 1 ? com[1] : "127.0.0.1"); Massage.Text = ""; break;
                     case "//ex":
                     case "/exit": Massage.Text = ""; this.Close(); break;
-                    case "//po":
-                    case "/position": positionwin(com[1]); Massage.Text = ""; break;
-                    case "//bo": 
-                    case "/border": borderstyleset(com[1]); Massage.Text = ""; break;
                     case "//fo":
                     case "/font": setallfont(com[1]); Massage.Text = ""; break;
                     case "//bg":
@@ -724,6 +693,18 @@ namespace WPF.Massager
             }
         }
 
+        private void UpdateElementPosition(double UP, double DOWN)
+        {
+            double SUP = UP + 10;
+            double SDOWN = DOWN + 10;
+            SplitterUP.Margin = new Thickness(SplitterUP.Margin.Left, UP, SplitterUP.Margin.Right, SplitterUP.Margin.Bottom);
+            SplitterDOWN.Margin = new Thickness(SplitterDOWN.Margin.Left, SplitterDOWN.Margin.Top, SplitterDOWN.Margin.Right, DOWN);
+            Massages.Margin = new Thickness(Massages.Margin.Left, SUP, Massages.Margin.Right, SDOWN);
+            Massage.Height = DOWN;
+            usersbox.Margin = new Thickness(usersbox.Margin.Left, WindowControl.Margin.Top+WindowControl.Height >= 0 ? WindowControl.Margin.Top + WindowControl.Height : 0, usersbox.Margin.Right, usersbox.Margin.Bottom);
+            usersbox.Height = UP - 19;
+        }
+
         static bool sendkey = true;
 
         private void Massage_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
@@ -748,59 +729,75 @@ namespace WPF.Massager
             }
         }
 
-        private void Massages_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            if (startinfo[2] && e.MiddleButton == System.Windows.Input.MouseButtonState.Pressed)
-            {
-                var screenPosition = this.PointToScreen(e.GetPosition(this));
-                Left = screenPosition.X - 150;
-            }
-        }
-
-        private void userboxbutton_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
-            {
-                if (e.GetPosition(this).Y < this.Height - Height/3*2 && e.GetPosition(this).Y > WindowControl.Margin.Top + 18)
-                {
-                    userboxbutton.Margin = new Thickness(-1, e.GetPosition(this).Y -1 , -1, 0);
-                    usersbox.Height = userboxbutton.Margin.Top + 2 - usersbox.Margin.Top;
-                    Massages.Margin = new Thickness(0, userboxbutton.Margin.Top + 10, 0, Massages.Margin.Bottom);
-                }
-            }
-        }
-
-        private void userboxbutton_Copy_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
-            {
-                if ( e.GetPosition(this).Y > Height/3*2 && e.GetPosition(this).Y < this.Height - 46)
-                {
-                    userboxbutton_Copy.Margin = new Thickness(-1, 0, -1, this.Height - e.GetPosition(this).Y);
-                    Massage.Height = userboxbutton_Copy.Margin.Bottom;
-                    Massages.Margin = new Thickness(0, Massages.Margin.Top, 0, userboxbutton_Copy.Margin.Bottom + 10);
-                }
-            }
-        }
-
         private void closebutton_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
         }
 
+        Point ClickPoint;
+
         private void WindowControl_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
             if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
             {
+                System.Windows.Input.Mouse.Capture(WindowControl);
                 var screenPosition = this.PointToScreen(e.GetPosition(this));
-                Left = screenPosition.X - 150;
-                Top = screenPosition.Y - 10;
+                Left = screenPosition.X - ClickPoint.X;
+                Top = screenPosition.Y - ClickPoint.Y;
             }
         }
 
         private void window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             savesetting();
+        }
+
+        private void SplitterDOWN_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
+            {
+                System.Windows.Input.Mouse.Capture(SplitterDOWN);
+                double Y = e.GetPosition(this).Y;
+                if (Y > Height / 3 * 2 && Y < Height - 5)
+                {
+                    UpdateElementPosition(SplitterUP.Margin.Top,this.Height-(Y+6));
+                }
+            }
+        }
+
+        private void SplitterUP_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if(e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
+            {
+                System.Windows.Input.Mouse.Capture(SplitterUP);
+                double Y = e.GetPosition(this).Y;
+                if (Y < Height / 3 && Y > (WindowControl.Margin.Top + WindowControl.Height >= 0 ? 19 + 4 : 4))
+                {
+                    UpdateElementPosition(Y - 4, SplitterDOWN.Margin.Bottom);
+                }
+            }
+        }
+
+        private void CaptureOFF(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            System.Windows.Input.Mouse.Capture(null);
+        }
+
+        private void WindowControl_PreviewMouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            ClickPoint = e.GetPosition(this);
+        }
+
+        private void winappbutton_Click(object sender, RoutedEventArgs e)
+        {
+            if (WindowControl.Fill == Brushes.White)
+            {
+                winappmode("off");
+            }
+            else
+            {
+                winappmode("on");
+            }
         }
     }
 }
