@@ -746,10 +746,6 @@ namespace WPF.Massager
             {
                 Button_Click();
             }
-            else
-            {
-
-            }
         }
 
         private void Massages_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
@@ -765,7 +761,7 @@ namespace WPF.Massager
         {
             if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
             {
-                if (e.GetPosition(this).Y < this.Height - userboxbutton_Copy.Margin.Bottom - Height/3*2 && e.GetPosition(this).Y > WindowControl.Margin.Top + 18)
+                if (e.GetPosition(this).Y < this.Height - Height/3*2 && e.GetPosition(this).Y > WindowControl.Margin.Top + 18)
                 {
                     userboxbutton.Margin = new Thickness(-1, e.GetPosition(this).Y -1 , -1, 0);
                     usersbox.Height = userboxbutton.Margin.Top + 2 - usersbox.Margin.Top;
@@ -778,7 +774,7 @@ namespace WPF.Massager
         {
             if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
             {
-                if ( e.GetPosition(this).Y > userboxbutton.Margin.Top + Height/3*2 && e.GetPosition(this).Y < this.Height - 46)
+                if ( e.GetPosition(this).Y > Height/3*2 && e.GetPosition(this).Y < this.Height - 46)
                 {
                     userboxbutton_Copy.Margin = new Thickness(-1, 0, -1, this.Height - e.GetPosition(this).Y);
                     Massage.Height = userboxbutton_Copy.Margin.Bottom;
