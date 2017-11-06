@@ -34,7 +34,7 @@ namespace WPF.Massager
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, UInt32 dwNewLong);
 
-        const string version = "Alpha 0.1.2";
+        const string version = "Alpha 0.1.3";
 
         public static void alwaysonbottom(Window F)
         {
@@ -327,7 +327,7 @@ namespace WPF.Massager
             WebClient GIT = new WebClient();
             GIT.DownloadFile("https://github.com/AxHamis/WPF.Massager/blob/master/WPF.Massager/bin/Debug/WPF.Massager.exe?raw=true", app);
             Process.Start(app);
-            this.Close();
+            Dispatcher.Invoke(() => this.Close());
         }
 
         private void restartexe()
