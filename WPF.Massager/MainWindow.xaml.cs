@@ -24,9 +24,9 @@ namespace WPF.Massager
         static readonly List<int> rootuser = new List<int>(); 
         static NetworkStream nscl = null;
         static Boolean conected = false;
+        static Boolean topbottom = true;
         public static String username = "#FFFFFF\u0002User";
 
-        bool[] startinfo = new bool[3];
         [DllImport("user32.dll")]
         private static extern bool SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
         [DllImport("user32.dll", SetLastError = true)]
@@ -34,23 +34,37 @@ namespace WPF.Massager
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, UInt32 dwNewLong);
 
-        const string version = "Alpha 0.2.0";
+        const string version = "Alpha 0.3.0";
 
-        public static void alwaysonbottom(Window F)
+        public static void alwaysonbottom(Window F, bool b)
         {
             var Handle = new WindowInteropHelper(F).Handle;
-            SetWindowPos(Handle, 1, (int)F.Left, (int)F.Top, (int)F.Width, (int)F.Height, 0x0010);
+            if (b)
+            {
+                SetWindowPos(Handle, 1, (int)F.Left, (int)F.Top, (int)F.Width, (int)F.Height, 0x0010);
+            }
+            else
+            {
+                SetWindowPos(Handle, -1, (int)F.Left, (int)F.Top, (int)F.Width, (int)F.Height, 0x0001 | 0x0002);
+            }
         }
 
-        public static void removetaskbarico(Window F)
+        public static void removetaskbarico(Window F, bool b)
         {
-            F.ShowInTaskbar = false;
+            F.ShowInTaskbar = !b;
         }
 
-        public static void hideinatbtab(Window F)
+        public static void hideinatbtab(Window F, bool b)
         {
             var Handle = new WindowInteropHelper(F).Handle;
-            SetWindowLong(Handle, -20, GetWindowLong(Handle, -20) | 0x00000080);
+            if (b)
+            {            
+                SetWindowLong(Handle, -20, 0x00000080);
+            }
+            else
+            {
+                SetWindowLong(Handle, -20, 0x00040000);
+            }
         }
 
         private void ElementSetUp()
@@ -71,9 +85,7 @@ namespace WPF.Massager
 
         private void Window_Activated(object sender, EventArgs e)
         {
-            removetaskbarico(this);
-            hideinatbtab(this);
-            alwaysonbottom(this);
+            alwaysonbottom(this, topbottom);
         }
 
         private string MassageToEndMassage(string msg, int userid)
@@ -137,22 +149,6 @@ namespace WPF.Massager
             Dispatcher.Invoke(() => Massages.ScrollToEnd());
         }
 
-        private void setnick(string s)
-        {
-            string[] old = username.Split('\u0002');
-            string nick = s[0].ToString().ToUpper() + s.Substring(1);
-            username = old[0]+'\u0002'+nick;
-            SystemMassageColor("----------------------------------------\n");
-            SystemMassageColor("YOU NAME UPDATE\n");
-            SystemMassageColor("NEW NAME:" + nick + "\n");
-            SystemMassageColor("OLD NAME:" + old[1] + "\n");
-            SystemMassageColor("----------------------------------------\n");
-            if (startinfo[0] == true)
-            {
-                clientsend("infomsg\u0001username\u0001" + username);
-            }
-        }
-
         private void savesetting()
         {
             string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)+"\\MSG\\";
@@ -194,89 +190,14 @@ namespace WPF.Massager
             if (s.Trim('\n', '\r', ' ', '\u0001', '.').Length > 0) return true; else return false;
         }
 
-        private void setallfont(string s)
-        {
-            switch (s)
-            {
-                case "arial": Massage.FontFamily = new FontFamily("Arial"); return;
-                case "courier new": Massage.FontFamily = new FontFamily("Courier New"); return;
-                case "calibri": Massages.FontFamily = new FontFamily("Calibri"); return;
-                case "impact": Massage.FontFamily = new FontFamily("Impact"); return;
-                case "comic sans ms": Massage.FontFamily = new FontFamily("Comic Sans MS"); return;
-                case "list": SystemMassageColor("----------------------------------------\n"); SystemMassageColor("FONTS LIST\nArial\nCourier New\nCalibri\nImpact\nComic Sans MS\n"); SystemMassageColor("----------------------------------------\n"); return;
-            }
-            Massage.UpdateLayout();
-        }
-
-        private void setbgcolor(string cl)
-        {
-            string[] C = cl.Split(' ');
-            double op = this.Background.Opacity;
-            byte R, G, B;
-            if (C.Length == 3 && byte.TryParse(C[0],out R)&& byte.TryParse(C[1], out G) && byte.TryParse(C[2], out B)) {
-                Massage.SelectionBrush = this.Background = new SolidColorBrush(Color.FromRgb(R, G, B));
-                this.Background.Opacity = op;
-            }
-        }
-
-        private void setfgcolor(string cl)
-        {
-            string[] C = cl.Split(' ');
-            byte R, G, B;
-            if (C.Length == 3 && byte.TryParse(C[0], out R) && byte.TryParse(C[1], out G) && byte.TryParse(C[2], out B))
-            {
-                Massage.Foreground = new SolidColorBrush(Color.FromRgb(R,G,B));
-            }
-        }
-
-        private void colornick(string cl)
-        {
-            string[] C = cl.Split(' ');
-            byte R, G, B;
-            if (C.Length == 3 && byte.TryParse(C[0], out R) && byte.TryParse(C[1], out G) && byte.TryParse(C[2], out B))
-            {
-                SolidColorBrush Br = new SolidColorBrush(Color.FromRgb(R, G, B));
-                string[] userid = username.Split('\u0002');
-                username = Br.ToString() + '\u0002' + userid[1];
-                SystemMassageColor("----------------------------------------\n");
-                SystemMassageColor("YOU NAME COLOR UPDATE\n");
-                SystemMassageColor("NEW NAME COLOR:" + Br.ToString() + "\n");
-                SystemMassageColor("OLD NAME COLOR:" + userid[0] + "\n");
-                SystemMassageColor("----------------------------------------\n");
-                if (startinfo[0] == true)
-                {
-                    clientsend("infomsg\u0001username\u0001" + username);
-                }
-
-            }
-        }
-
-        private void setbgopas(string s)
-        {
-            Double p;
-            if (Double.TryParse(s, out p) && p < 101 && p > 0)
-            {
-                this.Background.Opacity = p/100;
-            }
-        }
-
         void help()
         {
             SystemMassageColor("----------------------------------------\n");
             SystemMassageColor("COMANDS LIST\n");
             SystemMassageColor("/help (//hl)\n");
-            SystemMassageColor("/setnick (//sn)\n");
             SystemMassageColor("/startserver (//ss)\n");
             SystemMassageColor("/startclient (//sc)\n");
-            SystemMassageColor("/exit (//ex)\n");
-            SystemMassageColor("/font (//fo)\n");
-            SystemMassageColor("/background (//bg)\n");
-            SystemMassageColor("/opacity (//op)\n");
             SystemMassageColor("/update (//up)\n");
-            SystemMassageColor("/winappmode (//wa)\n");
-            SystemMassageColor("/foreground (//fg)\n");
-            SystemMassageColor("/colornick (//cn)\n");
-            SystemMassageColor("/restart (//rs)\n");
             SystemMassageColor("/sms (//sm)\n");
             SystemMassageColor("/root (//ro)\n");
             SystemMassageColor("/ban (//bn)\n");
@@ -323,12 +244,14 @@ namespace WPF.Massager
                 winappbutton.Width = 22;
                 UpdateElementPosition(66,46);
                 this.Height = this.Height - 300;
+                hideinatbtab(this, false);
             }
             else
             {
                 winappbutton.Width = Width - 18;
                 WindowControl.Fill = Brushes.Transparent;
                 UpdateElementPosition(66, 46);
+                hideinatbtab(this, true);
             }
         }
 
@@ -382,28 +305,10 @@ namespace WPF.Massager
                 {
                     case "//up":
                     case "/update": Thread UP = new Thread(updateexe); SystemMassageColor("----------------------------------------\n"+"START UPDATE\n"+"YOU VERSION:"+version+"\n"+"----------------------------------------\n"); UP.Start(); Massage.Text = ""; break;
-                    case "//rs":
-                    case "/restart": Thread RS = new Thread(restartexe); SystemMassageColor("----------------------------------------\n" + "RESTARTING\n" + "----------------------------------------\n"); RS.Start(); Massage.Text = ""; break;
-                    case "//sn":
-                    case "/setnick": setnick(com[1]); Massage.Text = ""; break;
-                    case "//cn":
-                    case "/colornick": colornick(com[1]); Massage.Text = ""; break;
                     case "//ss":
                     case "/startserver": startserver(); Massage.Text = ""; break;
                     case "//sc":
                     case "/startclient": startclient(com.Length > 1 ? com[1] : "127.0.0.1"); Massage.Text = ""; break;
-                    case "//ex":
-                    case "/exit": Massage.Text = ""; this.Close(); break;
-                    case "//fo":
-                    case "/font": setallfont(com[1]); Massage.Text = ""; break;
-                    case "//bg":
-                    case "/background": setbgcolor(com[1]); Massage.Text = ""; break;
-                    case "//fg":
-                    case "/foreground": setfgcolor(com[1]); Massage.Text = ""; break;
-                    case "//op":
-                    case "/opacity": setbgopas(com[1]); Massage.Text = ""; break;
-                    case "//wa":
-                    case "/winappmode": winappmode(com[1]); Massage.Text = ""; break;
                     case "//sm":
                     case "/sms": sendprivate(com[1]); Massage.Text = ""; break;
                     case "//bn":
@@ -418,7 +323,7 @@ namespace WPF.Massager
             }
             else
             {
-                if (startinfo[0] && conected)
+                if (conected)
                 {
                     if (username.Trim(' ','\n','\r') != "" && !username.Contains("\u0001"))
                     {
@@ -464,7 +369,6 @@ namespace WPF.Massager
                 int count = 1;
                 TcpListener ServerSocket = new TcpListener(IPAddress.Any, 11221);
                 ServerSocket.Start();
-                startinfo[1] = true;
                 SystemMassageColor("----------------------------------------\n");
                 SystemMassageColor("SERVER STARTED\n");
                 string HostName = Dns.GetHostName();
@@ -632,7 +536,6 @@ namespace WPF.Massager
                 nscl = client.GetStream();
                 Thread thread = new Thread(o => ReceiveData((TcpClient)o));
                 thread.Start(client);
-                startinfo[0] = true;
                 clientsend("infomsg\u0001username\u0001" + username);
             }
             catch
@@ -798,6 +701,112 @@ namespace WPF.Massager
             {
                 winappmode("on");
             }
+        }
+
+        private void window_Loaded(object sender, RoutedEventArgs e)
+        {
+            hideinatbtab(this, true);
+            removetaskbarico(this, true);
+        }
+
+        private void pinbutton_Click(object sender, RoutedEventArgs e)
+        {
+            topbottom = !topbottom;
+            alwaysonbottom(this, topbottom);
+        }
+
+        private void Setting_Click(object sender, RoutedEventArgs e)
+        {
+            if (ControlCenter.Margin.Bottom == 0)
+            {
+                UpdateElementPosition(SplitterUP.Margin.Top, 46);
+                ControlCenter.Margin = new Thickness(-1, 0, -1, -105);
+            }
+            else
+            {
+                UpdateElementPosition(SplitterUP.Margin.Top, 95);
+                ControlCenter.Margin = new Thickness(-1, 0, -1, 0);
+            }
+        }
+
+        private void TabItem_MouseEnter_UN(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            UNcolorRC_N.Text = username.Split('\u0002')[1];
+            UNcolorRC.Fill = new BrushConverter().ConvertFromString(username.Split('\u0002')[0]) as Brush;
+            Color cl = (Color)ColorConverter.ConvertFromString(UNcolorRC.Fill.ToString());
+            UNcolorRC_R.Value = cl.R;
+            UNcolorRC_G.Value = cl.G;
+            UNcolorRC_B.Value = cl.B;
+        }
+
+        private void TabItem_MouseEnter_FG(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            FGcolorRC.Fill = Massage.Foreground;
+            Color cl = (Color)ColorConverter.ConvertFromString(FGcolorRC.Fill.ToString());
+            FGcolorRC_R.Value = cl.R;
+            FGcolorRC_G.Value = cl.G;
+            FGcolorRC_B.Value = cl.B;
+            FGcolorRC_F.ItemsSource = System.Windows.Media.Fonts.SystemFontFamilies;
+            FGcolorRC_F.SelectedItem = Massage.FontFamily;
+        }
+
+        private void TabItem_MouseEnter_BG(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            BGcolorRC.Fill = this.Background;
+            Color cl = (Color)ColorConverter.ConvertFromString(BGcolorRC.Fill.ToString());
+            BGcolorRC_O.Value = this.Background.Opacity;
+            BGcolorRC_R.Value = cl.R;
+            BGcolorRC_G.Value = cl.G;
+            BGcolorRC_B.Value = cl.B;
+        }
+
+        private void BGcolorRC_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            Color cl = Color.FromRgb(0,0,0);
+            cl.R = (byte)BGcolorRC_R.Value;
+            cl.G = (byte)BGcolorRC_G.Value;
+            cl.B = (byte)BGcolorRC_B.Value;
+            BGcolorRC.Fill = new BrushConverter().ConvertFromString(cl.ToString()) as Brush;
+            BGcolorRC.Fill.Opacity = BGcolorRC_O.Value;
+        }
+
+        private void TabItem_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            this.Background = BGcolorRC.Fill;
+        }
+
+        private void TabItem_MouseLeave_1(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            Massage.Foreground = FGcolorRC.Fill;
+            Massage.FontFamily = (FontFamily)FGcolorRC_F.SelectedItem;
+        }
+
+        private void TabItem_MouseLeave_2(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            string oldname = username;
+            username = UNcolorRC.Fill.ToString() + '\u0002' + UNcolorRC_N.Text;
+            if (conected && oldname != username)
+            {
+                clientsend("infomsg\u0001username\u0001" + username);
+            }
+        }
+
+        private void FGcolorRC_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            Color cl = Color.FromRgb(0, 0, 0);
+            cl.R = (byte)FGcolorRC_R.Value;
+            cl.G = (byte)FGcolorRC_G.Value;
+            cl.B = (byte)FGcolorRC_B.Value;
+            FGcolorRC.Fill = new BrushConverter().ConvertFromString(cl.ToString()) as Brush;
+        }
+
+        private void UNcolorRC_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            Color cl = Color.FromRgb(0, 0, 0);
+            cl.R = (byte)UNcolorRC_R.Value;
+            cl.G = (byte)UNcolorRC_G.Value;
+            cl.B = (byte)UNcolorRC_B.Value;
+            UNcolorRC.Fill = new BrushConverter().ConvertFromString(cl.ToString()) as Brush;
         }
     }
 }

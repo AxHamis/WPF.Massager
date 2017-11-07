@@ -5,8 +5,45 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPF.Massager"
         mc:Ignorable="d"
-        Title="MainWindow" Height="798" Width="300" Activated="Window_Activated" ResizeMode="NoResize" Foreground="{x:Null}" Padding="0" Margin="0" WindowStyle="None" AllowsTransparency="True" Closing="window_Closing">
+        Title="MainWindow" Height="798" Width="300" Activated="Window_Activated" ResizeMode="NoResize" Foreground="{x:Null}" Padding="0" Margin="0" WindowStyle="None" AllowsTransparency="True" Closing="window_Closing" Loaded="window_Loaded">
     <Window.Resources>
+        <Style TargetType="TabItem" BasedOn="{StaticResource {x:Type TabItem}}">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TabItem}">
+                        <Grid SnapsToDevicePixels="true">
+                            <Border x:Name="HeaderBorder" Padding="8,3,8,3" BorderThickness="1,1,1,0">
+                                <ContentPresenter x:Name="Content" ContentSource="Header"
+                                          HorizontalAlignment="{Binding Path=HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
+                                          VerticalAlignment="{Binding Path=VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
+                                          />
+                            </Border>
+                            <Border x:Name="TopLineCover" BorderThickness="1,1,0,1" Margin="0,0,0,0" Height="23" Panel.ZIndex="100"
+                            
+                            VerticalAlignment="Top" HorizontalAlignment="Stretch" Visibility="Collapsed"/>
+                            <Border x:Name="BottomLineCover" BorderThickness="3,3,3,3" Margin="-2,-2,-2,-2" Height="26" Panel.ZIndex="100" BorderBrush="White"
+                            VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Visibility="Collapsed"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsMouseOver" Value="True"/>
+                                    <Condition Property="IsSelected" Value="False"/>
+                                </MultiTrigger.Conditions>
+                                
+                            </MultiTrigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" TargetName="HeaderBorder" Value="White"/>
+                                <Setter Property="Visibility" TargetName="TopLineCover" Value="Visible"/>
+                                <Setter Property="Visibility" TargetName="BottomLineCover" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <Style x:Key="TextBoxStyle1" BasedOn="{x:Null}" TargetType="{x:Type TextBox}">
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="Template">
@@ -94,7 +131,7 @@
                     </Style>
                 </Button.Style>
             </Button>
-            <Button x:Name="winappbutton" Content="" HorizontalAlignment="Right" Margin="0,-1,20,0" VerticalAlignment="Top" Width="282" Height="22" BorderBrush="{x:Null}" FontFamily="Calibri" FontSize="16" Click="winappbutton_Click">
+            <Button x:Name="winappbutton" Content="" Margin="0,-1,40,0" VerticalAlignment="Top" Height="22" BorderBrush="{x:Null}" FontFamily="Calibri" FontSize="16" Click="winappbutton_Click" HorizontalAlignment="Right" Width="262">
                 <Button.Style>
                     <Style BasedOn="{x:Null}" TargetType="{x:Type Button}">
                         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
@@ -116,6 +153,93 @@
                     </Style>
                 </Button.Style>
             </Button>
+            <Button x:Name="pinbutton" Content="" HorizontalAlignment="Right" VerticalAlignment="Top" Width="22" Height="22" BorderBrush="{x:Null}" FontFamily="Calibri" FontSize="16" Click="pinbutton_Click" Margin="0,-1,20,0">
+                <Button.Style>
+                    <Style BasedOn="{x:Null}" TargetType="{x:Type Button}">
+                        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <Border Background="{TemplateBinding Background}" BorderBrush="Transparent" BorderThickness="1"/>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="Border.Background" Value="Gray"/>
+                        <Setter Property="Opacity" Value="0.4" />
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Border.Background" Value="Green" />
+                                <Setter Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
         </Grid>
+        <Grid x:Name="ControlCenter" Margin="-1,0,-1,-105" Height="100" VerticalAlignment="Bottom">
+            <Rectangle Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="100" VerticalAlignment="Top" Width="300"/>
+            <TabControl Background="White" Height="100" VerticalAlignment="Top" TabStripPlacement="Left" BorderBrush="{x:Null}" >
+                <TabItem Header="Control">
+                    <Grid/>
+                </TabItem>
+                <TabItem Header="Backgroung" MouseEnter="TabItem_MouseEnter_BG" MouseLeave="TabItem_MouseLeave">
+                    <Grid>
+                        <Rectangle x:Name="BGcolorRC" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="74" Margin="10,10,0,0" VerticalAlignment="Top" Width="74"/>
+                        <Slider x:Name="BGcolorRC_R" HorizontalAlignment="Left" Margin="89,11,0,0" VerticalAlignment="Top" Width="118" Maximum="255" SmallChange="1" ValueChanged="BGcolorRC_ValueChanged"/>
+                        <Slider x:Name="BGcolorRC_G" HorizontalAlignment="Left" Margin="89,29,0,0" VerticalAlignment="Top" Width="118" Maximum="255" SmallChange="1" ValueChanged="BGcolorRC_ValueChanged"/>
+                        <Slider x:Name="BGcolorRC_B" HorizontalAlignment="Left" Margin="89,47,0,0" VerticalAlignment="Top" Width="118" SmallChange="1" Maximum="255" ValueChanged="BGcolorRC_ValueChanged"/>
+                        <Slider x:Name="BGcolorRC_O" HorizontalAlignment="Left" Margin="89,65,0,0" VerticalAlignment="Top" Width="118" Maximum="1" TickFrequency="0.01" ValueChanged="BGcolorRC_ValueChanged" Minimum="0.1" SmallChange="0.01"/>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Font" MouseEnter="TabItem_MouseEnter_FG" MouseLeave="TabItem_MouseLeave_1">
+                    <Grid>
+                        <Rectangle x:Name="FGcolorRC" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="74" Margin="10,10,0,0" VerticalAlignment="Top" Width="74"/>
+                        <Slider x:Name="FGcolorRC_R" HorizontalAlignment="Left" Margin="89,11,0,0" VerticalAlignment="Top" Width="118" Maximum="255" SmallChange="1" ValueChanged="FGcolorRC_ValueChanged"/>
+                        <Slider x:Name="FGcolorRC_G" HorizontalAlignment="Left" Margin="89,29,0,0" VerticalAlignment="Top" Width="118" Maximum="255" SmallChange="1" ValueChanged="FGcolorRC_ValueChanged"/>
+                        <Slider x:Name="FGcolorRC_B" HorizontalAlignment="Left" Margin="89,47,0,0" VerticalAlignment="Top" Width="118" SmallChange="1" Maximum="255" ValueChanged="FGcolorRC_ValueChanged"/>
+                        <ComboBox x:Name="FGcolorRC_F" HorizontalAlignment="Left" Margin="89,65,0,0" VerticalAlignment="Top" Width="118" Height="18" FontSize="10"/>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Username" MouseEnter="TabItem_MouseEnter_UN" MouseLeave="TabItem_MouseLeave_2">
+                    <Grid>
+                        <Rectangle x:Name="UNcolorRC" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="74" Margin="10,10,0,0" VerticalAlignment="Top" Width="74"/>
+                        <Slider x:Name="UNcolorRC_R" HorizontalAlignment="Left" Margin="89,11,0,0" VerticalAlignment="Top" Width="118" Maximum="255" SmallChange="1" ValueChanged="UNcolorRC_ValueChanged"/>
+                        <Slider x:Name="UNcolorRC_G" HorizontalAlignment="Left" Margin="89,29,0,0" VerticalAlignment="Top" Width="118" Maximum="255" SmallChange="1" ValueChanged="UNcolorRC_ValueChanged"/>
+                        <Slider x:Name="UNcolorRC_B" HorizontalAlignment="Left" Margin="89,47,0,0" VerticalAlignment="Top" Width="118" SmallChange="1" Maximum="255" ValueChanged="UNcolorRC_ValueChanged"/>
+                        <TextBox x:Name="UNcolorRC_N" HorizontalAlignment="Left" Height="18" Margin="89,65,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="118"/>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+        </Grid>
+        <Button x:Name="Setting" Content="" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="22" Height="22" BorderBrush="{x:Null}" FontFamily="Calibri" FontSize="16" Margin="0,0,-12,-12" RenderTransformOrigin="0.5,0.5" Click="Setting_Click">
+            <Button.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="45"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </Button.RenderTransform>
+            <Button.Style>
+                <Style BasedOn="{x:Null}" TargetType="{x:Type Button}">
+                    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type Button}">
+                                <Border Background="{TemplateBinding Background}" BorderBrush="Transparent" BorderThickness="1"/>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Border.Background" Value="Gray"/>
+                    <Setter Property="Opacity" Value="0.4" />
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Border.Background" Value="{Binding Background, ElementName=window}" />
+                            <Setter Property="Opacity" Value="0.4"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+        </Button>
     </Grid>
 </Window>
