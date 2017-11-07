@@ -34,7 +34,7 @@ namespace WPF.Massager
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, UInt32 dwNewLong);
 
-        const string version = "Alpha 0.3.0";
+        const string version = "Alpha 0.3.1";
 
         public static void alwaysonbottom(Window F, bool b)
         {
@@ -139,14 +139,8 @@ namespace WPF.Massager
             }
             catch
             {
-                int i = 0;
-            }
-        }
 
-        private void SystemMassageColor(string s)
-        {
-            Dispatcher.Invoke(() => AppendColorText(Massages,s, Brushes.Orange.Color));
-            Dispatcher.Invoke(() => Massages.ScrollToEnd());
+            }
         }
 
         private void savesetting()
@@ -185,23 +179,14 @@ namespace WPF.Massager
             }
         }
 
+        private void SystemMassage(string s)
+        {
+            Dispatcher.Invoke(() => AppendColorText(Massages,s, (Color)ColorConverter.ConvertFromString(Massage.Foreground.ToString())));
+        }
+
         private bool informmsg(string s)
         {
             if (s.Trim('\n', '\r', ' ', '\u0001', '.').Length > 0) return true; else return false;
-        }
-
-        void help()
-        {
-            SystemMassageColor("----------------------------------------\n");
-            SystemMassageColor("COMANDS LIST\n");
-            SystemMassageColor("/help (//hl)\n");
-            SystemMassageColor("/startserver (//ss)\n");
-            SystemMassageColor("/startclient (//sc)\n");
-            SystemMassageColor("/update (//up)\n");
-            SystemMassageColor("/sms (//sm)\n");
-            SystemMassageColor("/root (//ro)\n");
-            SystemMassageColor("/ban (//bn)\n");
-            SystemMassageColor("----------------------------------------\n");
         }
 
         private void delloldversion()
@@ -210,10 +195,7 @@ namespace WPF.Massager
             if (File.Exists(app+".old"))
             {
                 File.Delete(app+".old");
-                SystemMassageColor("----------------------------------------\n");
-                SystemMassageColor("COMPLETE UPDATE\n");
-                SystemMassageColor("YOU VERSION:" + version + "\n");
-                SystemMassageColor("----------------------------------------\n");
+                SystemMassage("UPDATE COMPLETE (YOU VERSION:" + version + ")\n");
             }
         }
 
@@ -248,7 +230,7 @@ namespace WPF.Massager
             }
             else
             {
-                winappbutton.Width = Width - 18;
+                winappbutton.Width = Width-47;
                 WindowControl.Fill = Brushes.Transparent;
                 UpdateElementPosition(66, 46);
                 hideinatbtab(this, true);
@@ -304,7 +286,7 @@ namespace WPF.Massager
                 switch (com[0])
                 {
                     case "//up":
-                    case "/update": Thread UP = new Thread(updateexe); SystemMassageColor("----------------------------------------\n"+"START UPDATE\n"+"YOU VERSION:"+version+"\n"+"----------------------------------------\n"); UP.Start(); Massage.Text = ""; break;
+                    case "/update": Thread UP = new Thread(updateexe); SystemMassage("START UPDATE (YOU VERSION:"+version+")\n"); UP.Start(); Massage.Text = ""; break;
                     case "//ss":
                     case "/startserver": startserver(); Massage.Text = ""; break;
                     case "//sc":
@@ -315,9 +297,6 @@ namespace WPF.Massager
                     case "/ban": banusercomand(com[1]); Massage.Text = ""; break;
                     case "//ro":
                     case "/root": addtoroot(com[1]); Massage.Text = ""; break;
-                    case "//hl":
-                    case "/help": help(); Massage.Text = ""; break;
-                    case "/?testuserlist": string[] s = { "infomsg", "userlist", "5", "#DAA520\u0002Alex\u0002(127.0.0.1:11221)", "#D53032\u0002Make\u0002(127.0.0.2:11221)", "#9932CC\u0002Lisa\u0002(127.0.0.3:11221)", "#2A52BE\u0002Bob\u0002(127.0.0.4:11221)", "#32CD32\u0002Same\u0002(127.0.0.5:11221)" }; updateuserlist(s); break;
                     default: Massage.Text = "/help"; Massage.SelectAll(); break;
                 }
             }
@@ -358,8 +337,10 @@ namespace WPF.Massager
 
         private void startserver()
         {
-                Thread Server = new Thread(server);
-                Server.Start();
+            Dispatcher.Invoke(() => ServerIO.Fill = Brushes.Yellow);
+            Dispatcher.Invoke(() => ServerIO.Opacity = 0.5);
+            Thread Server = new Thread(server);
+            Server.Start();
         }
 
         private void server()
@@ -369,40 +350,31 @@ namespace WPF.Massager
                 int count = 1;
                 TcpListener ServerSocket = new TcpListener(IPAddress.Any, 11221);
                 ServerSocket.Start();
-                SystemMassageColor("----------------------------------------\n");
-                SystemMassageColor("SERVER STARTED\n");
-                string HostName = Dns.GetHostName();
-                SystemMassageColor("NAME:" + HostName + "\n");
-                IPAddress[] ipAddres = Dns.GetHostEntry(HostName).AddressList;
-                foreach (IPAddress ip in ipAddres)
-                {
-                    SystemMassageColor("IP:" + ip.ToString() + "\n");
-                }
-                SystemMassageColor("PORT:11221\n");
-                SystemMassageColor("----------------------------------------\n");
+                IPAddress[] ipAddres = Dns.GetHostEntry(Dns.GetHostName()).AddressList;
+                Dispatcher.Invoke(() => ServerIO.Fill = Brushes.Green);
+                Dispatcher.Invoke(() => ServerIO.Opacity = 0.5);
                 while (true)
                 {
                     TcpClient client = ServerSocket.AcceptTcpClient();
-                    lock (_lock) list_clients.Add(count, client);
-                    Thread.Sleep(500);
-                    SystemMassageColor("----------------------------------------\n");
-                    SystemMassageColor("NEW CONNECT\n");
-                    SystemMassageColor("IP-WAN:" + client.Client.RemoteEndPoint + "\n");
-                    SystemMassageColor("IP-LAN:" + client.Client.LocalEndPoint + "\n");
-                    SystemMassageColor("TTL:" + client.Client.Ttl + "\n");
-                    SystemMassageColor("----------------------------------------\n");
-                    Thread t = new Thread(handle_clients);
-                    t.Start(count);
-                    count++;
+                    if (ban_list_clients.Contains(client.Client.RemoteEndPoint.ToString().Split(':')[0]))
+                    {
+                        client.Client.Shutdown(SocketShutdown.Both);
+                        client.Close();
+                    }
+                    else
+                    {
+                        lock (_lock) list_clients.Add(count, client);
+                        Thread.Sleep(500);
+                        Thread t = new Thread(handle_clients);
+                        t.Start(count);
+                        count++;
+                    }
                 }
             }
             catch
             {
-                SystemMassageColor("----------------------------------------\n");
-                SystemMassageColor("SERVER NOT STARTED\n");
-                SystemMassageColor("FATAL ERROR\n");
-                SystemMassageColor("TRY RESTART PROGRAMM\n");
-                SystemMassageColor("----------------------------------------\n");
+                Dispatcher.Invoke(() => ServerIO.Fill = Brushes.Black);
+                Dispatcher.Invoke(() => ServerIO.Opacity = 0.5);
             }
         }
 
@@ -413,9 +385,8 @@ namespace WPF.Massager
             lock (_lock) client = list_clients[id];
             try
             {
-                while (true)
+                while (!ban_list_clients.Contains(client.Client.RemoteEndPoint.ToString().Split(':')[0]))
                 {
-                    if (ban_list_clients.Contains(client.Client.RemoteEndPoint.ToString().Split(':')[0])) break;
                     NetworkStream stream = client.GetStream();
                     byte[] buffer = new byte[1024 * 4];
                     int byte_count = stream.Read(buffer, 0, buffer.Length);
@@ -440,13 +411,13 @@ namespace WPF.Massager
                         broadcast(data);
                     }
                 }
-                client.Client.Shutdown(SocketShutdown.Both);
-                client.Close();
             }
             catch
             {
-                
+
             }
+            client.Client.Shutdown(SocketShutdown.Both);
+            client.Close();
             lock (_lock) list_clients.Remove(id);
             list_clients_name.Remove(id);
             broadcast("infomsg\u0001userlist\u0001" + clientliststring());
@@ -522,17 +493,16 @@ namespace WPF.Massager
 
         private void startclient(string strip)
         {
+            Dispatcher.Invoke(() => clientIO.Fill = Brushes.Yellow);
+            Dispatcher.Invoke(() => clientIO.Opacity = 0.5);
             int port = 11221;
             try
             {
                 IPAddress ip = IPAddress.Parse(strip);
                 TcpClient client = new TcpClient();
                 client.Connect(ip, port);
-                SystemMassageColor("----------------------------------------\n");
-                SystemMassageColor("YOU CONNECT\n");
-                SystemMassageColor("IP:" + ip + "\n");
-                SystemMassageColor("PORT:" + port + "\n");
-                SystemMassageColor("----------------------------------------\n");
+                Dispatcher.Invoke(() => clientIO.Fill = Brushes.Green);
+                Dispatcher.Invoke(() => clientIO.Opacity = 0.5);
                 nscl = client.GetStream();
                 Thread thread = new Thread(o => ReceiveData((TcpClient)o));
                 thread.Start(client);
@@ -540,13 +510,8 @@ namespace WPF.Massager
             }
             catch
             {
-                SystemMassageColor("----------------------------------------\n");
-                SystemMassageColor("YOU NOT CONNECT\n");
-                SystemMassageColor("SERVER NOT RESPONDING\n");
-                SystemMassageColor("IP:" + strip + "\n");
-                SystemMassageColor("PORT:" + port + "\n");
-                SystemMassageColor("YOU CAN CREATE A SERVER /startserver\n");
-                SystemMassageColor("----------------------------------------\n");
+                Dispatcher.Invoke(() => clientIO.Fill = Brushes.Black);
+                Dispatcher.Invoke(() => clientIO.Opacity = 0.5);
             }
         }
 
@@ -579,6 +544,8 @@ namespace WPF.Massager
             {
 
             }
+            Dispatcher.Invoke(() => clientIO.Fill = Brushes.Black);
+            Dispatcher.Invoke(() => clientIO.Opacity = 0.5);
             conected = false;
             Dispatcher.Invoke(() => usersbox.Document = new FlowDocument());
         }
@@ -635,6 +602,7 @@ namespace WPF.Massager
         private void closebutton_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
+            Environment.Exit(0);
         }
 
         Point ClickPoint;

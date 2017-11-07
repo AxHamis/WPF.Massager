@@ -32,7 +32,7 @@
                                     <Condition Property="IsMouseOver" Value="True"/>
                                     <Condition Property="IsSelected" Value="False"/>
                                 </MultiTrigger.Conditions>
-                                
+
                             </MultiTrigger>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter Property="Background" TargetName="HeaderBorder" Value="White"/>
@@ -94,7 +94,7 @@
         <SolidColorBrush Color="Black" Opacity="0.4"/>
     </Window.Background>
     <Grid x:Name="MassageHistory">
-        <TextBox x:Name="Massage" FontFamily="Courier New" TextWrapping="Wrap" BorderBrush="{x:Null}" SelectionBrush="{Binding Background, ElementName=window}" Foreground="White" Style="{DynamicResource TextBoxStyle1}" Tag="Massage..." VerticalAlignment="Bottom" Background="{x:Null}" KeyUp="Massage_KeyUp" MaxLength="500" AcceptsTab="True" MaxLines="100" KeyDown="Massage_KeyDown" AcceptsReturn="False" Cursor="IBeam" Height="46"/>
+        <TextBox x:Name="Massage" FontFamily="Courier New" TextWrapping="Wrap" BorderBrush="{x:Null}" SelectionBrush="{Binding Background, ElementName=window}" Foreground="White" Style="{DynamicResource TextBoxStyle1}" Tag="Massage..." VerticalAlignment="Bottom" Background="{x:Null}" KeyUp="Massage_KeyUp" MaxLength="500" AcceptsTab="True" MaxLines="100" KeyDown="Massage_KeyDown" AcceptsReturn="False" Cursor="IBeam" Height="46" TextDecorations="{x:Null}"/>
         <RichTextBox x:Name="Massages" Margin="0,76,0,56" Block.LineHeight="1" FontFamily="{Binding FontFamily, ElementName=Massage}" SelectionBrush="{x:Null}" BorderBrush="{x:Null}" Style="{DynamicResource RichTextBoxStyle1}" IsReadOnly="True" IsHitTestVisible="True" Foreground="{Binding Foreground, ElementName=Massage}" Background="{x:Null}" Cursor="Arrow">
             <FlowDocument>
                 <Paragraph>
@@ -109,6 +109,7 @@
         <Rectangle x:Name="SplitterUP" Fill="{Binding Background, ElementName=window}" Height="4" VerticalAlignment="Top" PreviewMouseMove="SplitterUP_PreviewMouseMove" Cursor="SizeNS" PreviewMouseLeftButtonUp="CaptureOFF" Margin="0,66,0,0"/>
         <Rectangle x:Name="SplitterDOWN" Fill="{Binding Background, ElementName=window}" Height="4" Margin="0,0,0,46" VerticalAlignment="Bottom" Cursor="SizeNS" PreviewMouseMove="SplitterDOWN_PreviewMouseMove" PreviewMouseLeftButtonUp="CaptureOFF"/>
         <Grid Margin="{Binding Margin, ElementName=WindowControl}">
+            <Rectangle x:Name="ServerIO" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" Width="5" Fill="#7F000000"/>
             <Button x:Name="closebutton" Content="" HorizontalAlignment="Right" VerticalAlignment="Top" Width="22" Height="22" BorderBrush="{x:Null}" FontFamily="Calibri" FontSize="16" Click="closebutton_Click" Margin="0,-1,0,0">
                 <Button.Style>
                     <Style BasedOn="{x:Null}" TargetType="{x:Type Button}">
@@ -131,7 +132,7 @@
                     </Style>
                 </Button.Style>
             </Button>
-            <Button x:Name="winappbutton" Content="" Margin="0,-1,40,0" VerticalAlignment="Top" Height="22" BorderBrush="{x:Null}" FontFamily="Calibri" FontSize="16" Click="winappbutton_Click" HorizontalAlignment="Right" Width="262">
+            <Button x:Name="winappbutton" Content="" Margin="0,-1,40,0" VerticalAlignment="Top" Height="22" BorderBrush="{x:Null}" FontFamily="Calibri" FontSize="16" Click="winappbutton_Click" HorizontalAlignment="Right" Width="253">
                 <Button.Style>
                     <Style BasedOn="{x:Null}" TargetType="{x:Type Button}">
                         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
@@ -175,6 +176,7 @@
                     </Style>
                 </Button.Style>
             </Button>
+            <Rectangle x:Name="clientIO" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" Width="5" Margin="5,0,0,0" Fill="#7F000000"/>
         </Grid>
         <Grid x:Name="ControlCenter" Margin="-1,0,-1,-105" Height="100" VerticalAlignment="Bottom">
             <Rectangle Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="100" VerticalAlignment="Top" Width="300"/>
