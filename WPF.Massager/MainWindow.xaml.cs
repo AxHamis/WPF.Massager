@@ -21,11 +21,10 @@ namespace WPF.Massager
         static readonly Dictionary<int, TcpClient> list_clients = new Dictionary<int, TcpClient>();
         static readonly List<string> ban_list_clients = new List<string>();
         static readonly Dictionary<int, string> list_clients_name = new Dictionary<int, string>();
-        static readonly List<int> rootuser = new List<int>(); 
         static NetworkStream nscl = null;
         static Boolean conected = false;
         static Boolean topbottom = true;
-        static Byte youroot = 0;
+        static Boolean youroot = false;
         public static String username = "#FFFFFF\u0002User";
 
         [DllImport("user32.dll")]
@@ -35,7 +34,7 @@ namespace WPF.Massager
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, UInt32 dwNewLong);
 
-        const string version = "Alpha 0.3.2";
+        const string version = "Alpha 0.3.3";
 
         public static void alwaysonbottom(Window F, bool b)
         {
@@ -249,16 +248,6 @@ namespace WPF.Massager
             clientsend("infomsg\u0001root\u0001ban\u0001" + s);
         }
 
-        private void addtoroot(string s)
-        {
-            int id;
-            if(int.TryParse(s, out id))
-            {
-                rootuser.Add(id);
-                clientsend("infomsg\u0001privatemsg\u0001"+s+"infomsg\u0001addadmin");
-            }
-        }
-
         private void Button_Click()
         {
             if (Massage.Text.Trim('\n', '\r', ' ').Length == 0) return;
@@ -269,16 +258,6 @@ namespace WPF.Massager
                     clientsend(username + "\u0001" + Massage.Text);
                     Massage.Text = "";
                 }
-                else
-                {
-                    Massage.Text = "/setnick";
-                    Massage.SelectAll();
-                }
-            }
-            else
-            {
-                Massage.Text = "/startclient";
-                Massage.SelectAll();
             }
         }
 
@@ -312,7 +291,6 @@ namespace WPF.Massager
                 IPAddress[] ipAddres = Dns.GetHostEntry(Dns.GetHostName()).AddressList;
                 Dispatcher.Invoke(() => ServerIO.Fill = Brushes.Green);
                 Dispatcher.Invoke(() => ServerIO.Opacity = 0.5);
-                youroot = 2;
                 while (true)
                 {
                     TcpClient client = ServerSocket.AcceptTcpClient();
@@ -335,13 +313,13 @@ namespace WPF.Massager
             {
                 Dispatcher.Invoke(() => ServerIO.Fill = Brushes.Black);
                 Dispatcher.Invoke(() => ServerIO.Opacity = 0.5);
-                youroot = 0;
             }
         }
 
         private static void handle_clients(object o)
         {
             int id = (int)o;
+            if (id == 1) privatemassage("infomsg\u0001youroot", id.ToString(), id);
             TcpClient client;
             lock (_lock) client = list_clients[id];
             try
@@ -386,7 +364,7 @@ namespace WPF.Massager
 
         private static void rootcom(string com, string arg, int id)
         {
-            if (rootuser.Contains(id))
+            if (id == 1)
             {
                 switch (com)
                 {
@@ -492,7 +470,7 @@ namespace WPF.Massager
                         switch (args[1])
                         {
                             case "userlist": updateuserlist(args); break;
-                            case "addadmin": youroot = 1; break;
+                            case "youroot": youroot = true; break;
                         }
                     }
                     else
@@ -507,7 +485,6 @@ namespace WPF.Massager
             }
             Dispatcher.Invoke(() => clientIO.Fill = Brushes.Black);
             Dispatcher.Invoke(() => clientIO.Opacity = 0.5);
-            youroot = 0;
             conected = false;
             Dispatcher.Invoke(() => usersbox.Document = new FlowDocument());
         }
@@ -521,29 +498,15 @@ namespace WPF.Massager
                 string[] s = list[i].Split('\u0002');
                 Color cl = (Color)ColorConverter.ConvertFromString(s[0]);
                 Dispatcher.Invoke(() => AppendColorText(usersbox, s[1]+' ', cl));
-                //Dispatcher.Invoke(() => AppendColorText(usersbox, s[2]+' ', Color.FromRgb((byte)(cl.R/2), (byte)(cl.G/2), (byte)(cl.B/2))));
                 Dispatcher.Invoke(() => AppendColorTextClick(usersbox, s[2], Color.FromRgb((byte)(cl.R / 2), (byte)(cl.G / 2), (byte)(cl.B / 2))));
             }
         }
 
-        private void AppendColorTextClick(RichTextBox box, string index ,Color color)
+        private void AppendColorTextClick(RichTextBox box, string index, Color color)
         {
             TextRange tr;
             Hyperlink link;
-
-            if (youroot > 1)
-            {
-                tr = new TextRange(box.Document.ContentEnd, box.Document.ContentEnd);
-                link = new Hyperlink(tr.End, tr.End);
-                link.IsEnabled = true;
-                link.Inlines.Add("[ADMIN]");
-                link.NavigateUri = new Uri("userindex://" + index[1]);
-                link.RequestNavigate += (s, e) => addtoroot(index[1].ToString());
-                link.Foreground = new SolidColorBrush(color);
-                link.TextDecorations = null;
-            }
-
-            if (youroot > 0)
+            if (youroot)
             {
                 tr = new TextRange(box.Document.ContentEnd, box.Document.ContentEnd);
                 link = new Hyperlink(tr.End, tr.End);
@@ -554,7 +517,6 @@ namespace WPF.Massager
                 link.Foreground = new SolidColorBrush(color);
                 link.TextDecorations = null;
             }
-
             tr = new TextRange(box.Document.ContentEnd, box.Document.ContentEnd);
             link = new Hyperlink(tr.End, tr.End);
             link.IsEnabled = true;
@@ -563,7 +525,6 @@ namespace WPF.Massager
             link.RequestNavigate += (s, e) => sendprivate(index[1].ToString());
             link.Foreground = new SolidColorBrush(color);
             link.TextDecorations = null;
-
             box.AppendText("\n");
         }
 
@@ -793,6 +754,11 @@ namespace WPF.Massager
             {
                 startclient(ip);
             }
+        }
+
+        private void Button_Click_3(object sender, RoutedEventArgs e)
+        {
+            updateexe();
         }
     }
 }
