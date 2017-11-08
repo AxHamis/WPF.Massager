@@ -25,6 +25,7 @@ namespace WPF.Massager
         static NetworkStream nscl = null;
         static Boolean conected = false;
         static Boolean topbottom = true;
+        static Byte youroot = 0;
         public static String username = "#FFFFFF\u0002User";
 
         [DllImport("user32.dll")]
@@ -34,7 +35,7 @@ namespace WPF.Massager
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, UInt32 dwNewLong);
 
-        const string version = "Alpha 0.3.1";
+        const string version = "Alpha 0.3.2";
 
         public static void alwaysonbottom(Window F, bool b)
         {
@@ -131,16 +132,9 @@ namespace WPF.Massager
 
         private void AppendColorText(RichTextBox box, string text, Color color)
         {
-            try
-            {
                 TextRange tr = new TextRange(box.Document.ContentEnd, box.Document.ContentEnd);
                 tr.Text = text;
                 tr.ApplyPropertyValue(TextElement.ForegroundProperty, new SolidColorBrush(color));
-            }
-            catch
-            {
-
-            }
         }
 
         private void savesetting()
@@ -182,11 +176,6 @@ namespace WPF.Massager
         private void SystemMassage(string s)
         {
             Dispatcher.Invoke(() => AppendColorText(Massages,s, (Color)ColorConverter.ConvertFromString(Massage.Foreground.ToString())));
-        }
-
-        private bool informmsg(string s)
-        {
-            if (s.Trim('\n', '\r', ' ', '\u0001', '.').Length > 0) return true; else return false;
         }
 
         private void delloldversion()
@@ -248,10 +237,9 @@ namespace WPF.Massager
 
         private void sendprivate(string s)
         {
-            int idindex = s.IndexOf(' ');
             if (username.Trim(' ', '\n', '\r') != "" && !username.Contains("\u0001"))
             {
-                clientsend("infomsg\u0001privatemsg\u0001" + s.Remove(idindex,s.Length-idindex) + "\u0001" + username + "\u0001" + s.Substring(idindex+1));
+                clientsend("infomsg\u0001privatemsg\u0001" + s + "\u0001" + username + "\u0001" + Massage.Text);
                 Massage.Text = "";
             }
         }
@@ -267,59 +255,30 @@ namespace WPF.Massager
             if(int.TryParse(s, out id))
             {
                 rootuser.Add(id);
+                clientsend("infomsg\u0001privatemsg\u0001"+s+"infomsg\u0001addadmin");
             }
         }
 
         private void Button_Click()
         {
-            if (!informmsg(Massage.Text)) return;
-            if (Massage.Text[0] == '/')
+            if (Massage.Text.Trim('\n', '\r', ' ').Length == 0) return;
+            if (conected)
             {
-                string[] com = Massage.Text.Split();
-                if (com.Length > 2)
+                if (username.Trim(' ', '\n', '\r') != "" && !username.Contains("\u0001"))
                 {
-                    for (int comnom = 2; comnom < com.Length; comnom++)
-                    {
-                        com[1] += " "+com[comnom]; 
-                    }
+                    clientsend(username + "\u0001" + Massage.Text);
+                    Massage.Text = "";
                 }
-                switch (com[0])
+                else
                 {
-                    case "//up":
-                    case "/update": Thread UP = new Thread(updateexe); SystemMassage("START UPDATE (YOU VERSION:"+version+")\n"); UP.Start(); Massage.Text = ""; break;
-                    case "//ss":
-                    case "/startserver": startserver(); Massage.Text = ""; break;
-                    case "//sc":
-                    case "/startclient": startclient(com.Length > 1 ? com[1] : "127.0.0.1"); Massage.Text = ""; break;
-                    case "//sm":
-                    case "/sms": sendprivate(com[1]); Massage.Text = ""; break;
-                    case "//bn":
-                    case "/ban": banusercomand(com[1]); Massage.Text = ""; break;
-                    case "//ro":
-                    case "/root": addtoroot(com[1]); Massage.Text = ""; break;
-                    default: Massage.Text = "/help"; Massage.SelectAll(); break;
+                    Massage.Text = "/setnick";
+                    Massage.SelectAll();
                 }
             }
             else
             {
-                if (conected)
-                {
-                    if (username.Trim(' ','\n','\r') != "" && !username.Contains("\u0001"))
-                    {
-                        clientsend(username + "\u0001" + Massage.Text);
-                        Massage.Text = "";
-                    }
-                    else
-                    {
-                        Massage.Text = "/setnick";
-                        Massage.SelectAll();
-                    }
-                }
-                else
-                {
-                    Massage.Text = "/startclient";
-                    Massage.SelectAll();
-                }
+                Massage.Text = "/startclient";
+                Massage.SelectAll();
             }
         }
 
@@ -353,6 +312,7 @@ namespace WPF.Massager
                 IPAddress[] ipAddres = Dns.GetHostEntry(Dns.GetHostName()).AddressList;
                 Dispatcher.Invoke(() => ServerIO.Fill = Brushes.Green);
                 Dispatcher.Invoke(() => ServerIO.Opacity = 0.5);
+                youroot = 2;
                 while (true)
                 {
                     TcpClient client = ServerSocket.AcceptTcpClient();
@@ -375,6 +335,7 @@ namespace WPF.Massager
             {
                 Dispatcher.Invoke(() => ServerIO.Fill = Brushes.Black);
                 Dispatcher.Invoke(() => ServerIO.Opacity = 0.5);
+                youroot = 0;
             }
         }
 
@@ -491,14 +452,13 @@ namespace WPF.Massager
                 nscl.Write(buffer, 0, buffer.Length);
         }
 
-        private void startclient(string strip)
+        private void startclient(IPAddress ip)
         {
             Dispatcher.Invoke(() => clientIO.Fill = Brushes.Yellow);
             Dispatcher.Invoke(() => clientIO.Opacity = 0.5);
             int port = 11221;
             try
             {
-                IPAddress ip = IPAddress.Parse(strip);
                 TcpClient client = new TcpClient();
                 client.Connect(ip, port);
                 Dispatcher.Invoke(() => clientIO.Fill = Brushes.Green);
@@ -532,6 +492,7 @@ namespace WPF.Massager
                         switch (args[1])
                         {
                             case "userlist": updateuserlist(args); break;
+                            case "addadmin": youroot = 1; break;
                         }
                     }
                     else
@@ -546,6 +507,7 @@ namespace WPF.Massager
             }
             Dispatcher.Invoke(() => clientIO.Fill = Brushes.Black);
             Dispatcher.Invoke(() => clientIO.Opacity = 0.5);
+            youroot = 0;
             conected = false;
             Dispatcher.Invoke(() => usersbox.Document = new FlowDocument());
         }
@@ -559,8 +521,50 @@ namespace WPF.Massager
                 string[] s = list[i].Split('\u0002');
                 Color cl = (Color)ColorConverter.ConvertFromString(s[0]);
                 Dispatcher.Invoke(() => AppendColorText(usersbox, s[1]+' ', cl));
-                Dispatcher.Invoke(() => AppendColorText(usersbox, s[2]+'\n', Color.FromRgb((byte)(cl.R/2), (byte)(cl.G/2), (byte)(cl.B/2))));
+                //Dispatcher.Invoke(() => AppendColorText(usersbox, s[2]+' ', Color.FromRgb((byte)(cl.R/2), (byte)(cl.G/2), (byte)(cl.B/2))));
+                Dispatcher.Invoke(() => AppendColorTextClick(usersbox, s[2], Color.FromRgb((byte)(cl.R / 2), (byte)(cl.G / 2), (byte)(cl.B / 2))));
             }
+        }
+
+        private void AppendColorTextClick(RichTextBox box, string index ,Color color)
+        {
+            TextRange tr;
+            Hyperlink link;
+
+            if (youroot > 1)
+            {
+                tr = new TextRange(box.Document.ContentEnd, box.Document.ContentEnd);
+                link = new Hyperlink(tr.End, tr.End);
+                link.IsEnabled = true;
+                link.Inlines.Add("[ADMIN]");
+                link.NavigateUri = new Uri("userindex://" + index[1]);
+                link.RequestNavigate += (s, e) => addtoroot(index[1].ToString());
+                link.Foreground = new SolidColorBrush(color);
+                link.TextDecorations = null;
+            }
+
+            if (youroot > 0)
+            {
+                tr = new TextRange(box.Document.ContentEnd, box.Document.ContentEnd);
+                link = new Hyperlink(tr.End, tr.End);
+                link.IsEnabled = true;
+                link.Inlines.Add("[BAN]");
+                link.NavigateUri = new Uri("userindex://" + index[1]);
+                link.RequestNavigate += (s, e) => banusercomand(index[1].ToString());
+                link.Foreground = new SolidColorBrush(color);
+                link.TextDecorations = null;
+            }
+
+            tr = new TextRange(box.Document.ContentEnd, box.Document.ContentEnd);
+            link = new Hyperlink(tr.End, tr.End);
+            link.IsEnabled = true;
+            link.Inlines.Add("[SMS]");
+            link.NavigateUri = new Uri("userindex://" + index[1]);
+            link.RequestNavigate += (s, e) => sendprivate(index[1].ToString());
+            link.Foreground = new SolidColorBrush(color);
+            link.TextDecorations = null;
+
+            box.AppendText("\n");
         }
 
         private void UpdateElementPosition(double UP, double DOWN)
@@ -775,6 +779,20 @@ namespace WPF.Massager
             cl.G = (byte)UNcolorRC_G.Value;
             cl.B = (byte)UNcolorRC_B.Value;
             UNcolorRC.Fill = new BrushConverter().ConvertFromString(cl.ToString()) as Brush;
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            startserver();
+        }
+
+        private void Button_Click_2(object sender, RoutedEventArgs e)
+        {
+            IPAddress ip;
+            if(IPAddress.TryParse(ipadress_text.Text, out ip))
+            {
+                startclient(ip);
+            }
         }
     }
 }
