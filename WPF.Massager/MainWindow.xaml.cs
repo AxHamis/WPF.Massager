@@ -183,12 +183,13 @@ namespace WPF.Massager
             if (File.Exists(app+".old"))
             {
                 File.Delete(app+".old");
-                SystemMassage("UPDATE COMPLETE (YOU VERSION:" + version + ")\n");
+                SystemMassage("UPDATE COMPLETE (" + version + ")\n");
             }
         }
 
         private void updateexe()
         {
+            SystemMassage("UPDATE START (" + version + ")\n");
             Thread.Sleep(1000);
             string app = System.Reflection.Assembly.GetExecutingAssembly().Location;
             File.Move(app, app + ".old");
