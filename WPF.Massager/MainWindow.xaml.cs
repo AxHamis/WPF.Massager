@@ -34,7 +34,7 @@ namespace WPF.Massager
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, UInt32 dwNewLong);
 
-        const string version = "Alpha 0.3.4";
+        const string version = "Alpha 0.3.5";
 
         public static void alwaysonbottom(Window F, bool b)
         {
@@ -298,6 +298,8 @@ namespace WPF.Massager
             if (id == 1) privatemassage("infomsg\u0001youroot", id.ToString(), id);
             TcpClient client;
             lock (_lock) client = list_clients[id];
+            DateTime OldMassageTime = DateTime.Now;
+            int FloodMsgs = 0;
             try
             {
                 while (!ban_list_clients.Contains(client.Client.RemoteEndPoint.ToString().Split(':')[0]))
@@ -309,21 +311,26 @@ namespace WPF.Massager
                     {
                         break;
                     }
-                    string data = Encoding.UTF8.GetString(buffer, 0, buffer.Length);
-                    data = data.Split('\0')[0];
-                    if (data.StartsWith("infomsg\u0001"))
+                    if (DateTime.Now - OldMassageTime < TimeSpan.Parse("0:0:0:1")) FloodMsgs++; else FloodMsgs = 0;
+                    OldMassageTime = DateTime.Now;
+                    if (FloodMsgs <= 3)
                     {
-                        string[] args = data.Split('\u0001');
-                        switch (args[1])
+                        string data = Encoding.UTF8.GetString(buffer, 0, buffer.Length);
+                        data = data.Split('\0')[0];
+                        if (data.StartsWith("infomsg\u0001"))
                         {
-                            case "username": if (list_clients_name.ContainsKey(id)) { list_clients_name.Remove(id); } list_clients_name.Add(id, args[2]); broadcast("infomsg\u0001userlist\u0001" + clientliststring()); break;
-                            case "privatemsg": privatemassage(data.Remove(0,20+args[2].Length), args[2], id); break;
-                            case "root": rootcom(args[2],args[3],id); break;
+                            string[] args = data.Split('\u0001');
+                            switch (args[1])
+                            {
+                                case "username": if (list_clients_name.ContainsKey(id)) { list_clients_name.Remove(id); } list_clients_name.Add(id, args[2]); broadcast("infomsg\u0001userlist\u0001" + clientliststring()); break;
+                                case "privatemsg": privatemassage(data.Remove(0, 20 + args[2].Length), args[2], id); break;
+                                case "root": rootcom(args[2], args[3], id); break;
+                            }
                         }
-                    }
-                    else
-                    {
-                        broadcast(data);
+                        else
+                        {
+                            broadcast(data);
+                        }
                     }
                 }
             }
@@ -519,25 +526,13 @@ namespace WPF.Massager
             usersbox.Height = UP - 19;
         }
 
-        static bool sendkey = true;
-
-        private void Massage_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
-        {
-            if (e.Key == System.Windows.Input.Key.LeftShift)
-            {
-                sendkey = true;
-                Massage.AcceptsReturn = false;
-            }
-        }
-
         private void Massage_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            if (e.Key == System.Windows.Input.Key.LeftShift)
+            if (e.KeyboardDevice.Modifiers == System.Windows.Input.ModifierKeys.Control || e.KeyboardDevice.Modifiers == System.Windows.Input.ModifierKeys.Shift)
             {
-                sendkey = false;
                 Massage.AcceptsReturn = true;
             }
-            if (e.Key == System.Windows.Input.Key.Enter && sendkey)
+            if (e.Key == System.Windows.Input.Key.Enter)
             {
                 Button_Click();
             }
@@ -738,6 +733,14 @@ namespace WPF.Massager
         private void Button_Click_3(object sender, RoutedEventArgs e)
         {
             updateexe();
+        }
+
+        private void Massage_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if(e.KeyboardDevice.Modifiers != System.Windows.Input.ModifierKeys.Control && e.KeyboardDevice.Modifiers != System.Windows.Input.ModifierKeys.Shift)
+            {
+                Massage.AcceptsReturn = false;
+            }
         }
     }
 }

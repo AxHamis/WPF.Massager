@@ -77,7 +77,7 @@
         <SolidColorBrush Color="Black" Opacity="0.4"/>
     </Window.Background>
     <Grid x:Name="MassageHistory">
-        <TextBox x:Name="Massage" FontFamily="Courier New" TextWrapping="Wrap" BorderBrush="{x:Null}" SelectionBrush="{Binding Background, ElementName=window}" Foreground="White" Style="{DynamicResource TextBoxStyle1}" Tag="Massage..." VerticalAlignment="Bottom" Background="{x:Null}" KeyUp="Massage_KeyUp" MaxLength="500" AcceptsTab="True" MaxLines="100" KeyDown="Massage_KeyDown" AcceptsReturn="False" Cursor="IBeam" Height="46" TextDecorations="{x:Null}"/>
+        <TextBox x:Name="Massage" FontFamily="Courier New" TextWrapping="Wrap" BorderBrush="{x:Null}" SelectionBrush="{Binding Background, ElementName=window}" Foreground="White" Style="{DynamicResource TextBoxStyle1}" Tag="Massage..." VerticalAlignment="Bottom" Background="{x:Null}" MaxLength="500" AcceptsTab="True" MaxLines="100" KeyDown="Massage_KeyDown" Cursor="IBeam" Height="46" TextDecorations="{x:Null}" KeyUp="Massage_KeyUp"/>
         <RichTextBox x:Name="Massages" Margin="0,76,0,56" Block.LineHeight="1" FontFamily="{Binding FontFamily, ElementName=Massage}" SelectionBrush="{x:Null}" BorderBrush="{x:Null}" Style="{DynamicResource RichTextBoxStyle1}" IsReadOnly="True" IsHitTestVisible="True" Foreground="{Binding Foreground, ElementName=Massage}" Background="{x:Null}" Cursor="Arrow">
             <FlowDocument>
                 <Paragraph>
