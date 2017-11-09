@@ -34,7 +34,7 @@ namespace WPF.Massager
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, UInt32 dwNewLong);
 
-        const string version = "Alpha 0.3.3";
+        const string version = "Alpha 0.3.4";
 
         public static void alwaysonbottom(Window F, bool b)
         {
@@ -91,42 +91,16 @@ namespace WPF.Massager
         private string MassageToEndMassage(string msg, int userid)
         {
             string endmsg = null;
-            int j = 41 - userid -1;
-            string pr = null;
-            for (int o = 0; o <= userid; o++)
-            {
-                pr += " ";
-            }
-            int i = 0;
+            char oldchar = '\n';
             foreach (char C in msg)
             {
-                bool auto = true;
-                if (C == '\r')
-                {
-                    continue;
-                }
-                if (C == '\n')
-                {
-                    i = -1;
-                    auto = false;
-                }
-                if (i == -1)
-                {
-                    endmsg += "\n"+pr;
-                    if (auto == false)
-                    {
-                        i=1;
-                        continue;
-                    }
-                }
-                i++;
+                if (C == '\r') continue;
+                if (C == '\n' && C == oldchar) continue;
+                oldchar = C;
                 endmsg += C;
-                if (i == j)
-                {
-                    i = -1;
-                }
             }
-            return endmsg + "\n";
+            if (oldchar != '\n') endmsg += '\n';
+            return ":"+endmsg;
         }
 
         private void AppendColorText(RichTextBox box, string text, Color color)
@@ -237,6 +211,7 @@ namespace WPF.Massager
 
         private void sendprivate(string s)
         {
+            if (Massage.Text.Trim('\n', '\r', ' ').Length == 0) return;
             if (username.Trim(' ', '\n', '\r') != "" && !username.Contains("\u0001"))
             {
                 clientsend("infomsg\u0001privatemsg\u0001" + s + "\u0001" + username + "\u0001" + Massage.Text);
@@ -270,7 +245,7 @@ namespace WPF.Massager
             masage = msg[1];
             Color cl = (Color)ColorConverter.ConvertFromString(userid[0]);
             Dispatcher.Invoke(() => AppendColorText(Massages, userid[1], cl));
-            Dispatcher.Invoke(() => AppendColorText(Massages, MassageToEndMassage(":" + masage, userid.Length), (Color)ColorConverter.ConvertFromString(Massage.Foreground.ToString())));
+            Dispatcher.Invoke(() => AppendColorText(Massages, MassageToEndMassage(masage, userid.Length), (Color)ColorConverter.ConvertFromString(Massage.Foreground.ToString())));
             this.Dispatcher.Invoke(() => Massages.ScrollToEnd());
         }
 
@@ -381,6 +356,9 @@ namespace WPF.Massager
             if (int.TryParse(id,out banid) && list_clients.TryGetValue(banid,out ip))
             {
                 ban_list_clients.Add(ip.Client.RemoteEndPoint.ToString().Split(':')[0]);
+                ip.Client.Shutdown(SocketShutdown.Both);
+                ip.Close();
+                broadcast("infomsg\u0001userlist\u0001" + clientliststring());
             }
         }
 

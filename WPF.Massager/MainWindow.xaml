@@ -169,41 +169,41 @@
                         <Button Margin="10,10,10,64" Content="Start server" Foreground="#FF5A5A5A" BorderBrush="{x:Null}" Click="Button_Click_1">
                             <Button.Style>
                                 <Style TargetType="{x:Type Button}">
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="{x:Type Button}">
-                                                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
-                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                    </Border>
-                                                    <ControlTemplate.Triggers>
-                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="Background" Value="DarkGray"/>
-                                                        </Trigger>
-                                                    </ControlTemplate.Triggers>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </Style>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="{x:Type Button}">
+                                                <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" Value="DarkGray"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
                             </Button.Style>
                         </Button>
                         <Button Margin="10,35,10,39" Content="Start client" Foreground="#FF5A5A5A" BorderBrush="{x:Null}" Click="Button_Click_2">
                             <Button.Style>
                                 <Style TargetType="{x:Type Button}">
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="{x:Type Button}">
-                                                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
-                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                    </Border>
-                                                    <ControlTemplate.Triggers>
-                                                        <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="{x:Type Button}">
+                                                <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
                                                         <Setter Property="Background" Value="DarkGray"/>
-                                                        </Trigger>
-                                                    </ControlTemplate.Triggers>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </Style>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
                             </Button.Style>
                         </Button>
                         <TextBox x:Name="ipadress_text" TextWrapping="Wrap" Margin="10,60,35,14" Text="127.0.0.1"/>
@@ -258,7 +258,7 @@
                 </TabItem>
             </TabControl>
         </Grid>
-        <Button x:Name="Setting" Content="" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="22" Height="22" BorderBrush="{x:Null}" FontFamily="Calibri" FontSize="16" Margin="0,0,-12,-12" RenderTransformOrigin="0.5,0.5" Click="Setting_Click">
+        <Button x:Name="Setting" Content="" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="37" Height="38" BorderBrush="{x:Null}" FontFamily="Calibri" FontSize="16" Margin="0,0,-20,-20" RenderTransformOrigin="0.5,0.5" Click="Setting_Click">
             <Button.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
