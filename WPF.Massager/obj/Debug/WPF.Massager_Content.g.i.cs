@@ -8,6 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("massager.ico")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("version.txt")]
 
 

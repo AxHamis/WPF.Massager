@@ -25,7 +25,7 @@ namespace WPF.Massager
         static Boolean conected = false;
         static Boolean topbottom = true;
         static Boolean youroot = false;
-        public static String username = "#FFFFFF\u0002User";
+        public static String username = "#FFFFFF\u0002NewUser";
 
         [DllImport("user32.dll")]
         private static extern bool SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
@@ -33,8 +33,6 @@ namespace WPF.Massager
         private static extern UInt32 GetWindowLong(IntPtr hWnd, int nIndex);
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, UInt32 dwNewLong);
-
-        const string version = "Alpha 0.3.5";
 
         public static void alwaysonbottom(Window F, bool b)
         {
@@ -157,13 +155,13 @@ namespace WPF.Massager
             if (File.Exists(app+".old"))
             {
                 File.Delete(app+".old");
-                SystemMassage("UPDATE COMPLETE (" + version + ")\n");
+                SystemMassage("UPDATE COMPLETE (" + WPF.Massager.Properties.Resources.Version + ")\n");
             }
         }
 
         private void updateexe()
         {
-            SystemMassage("UPDATE START (" + version + ")\n");
+            SystemMassage("UPDATE START (" + Encoding.ASCII.GetString(WPF.Massager.Properties.Resources.Version) + ")\n");
             Thread.Sleep(1000);
             string app = System.Reflection.Assembly.GetExecutingAssembly().Location;
             File.Move(app, app + ".old");
@@ -305,7 +303,7 @@ namespace WPF.Massager
                 while (!ban_list_clients.Contains(client.Client.RemoteEndPoint.ToString().Split(':')[0]))
                 {
                     NetworkStream stream = client.GetStream();
-                    byte[] buffer = new byte[1024 * 4];
+                    byte[] buffer = new byte[client.ReceiveBufferSize];
                     int byte_count = stream.Read(buffer, 0, buffer.Length);
                     if (byte_count == 0)
                     {
@@ -315,7 +313,7 @@ namespace WPF.Massager
                     OldMassageTime = DateTime.Now;
                     if (FloodMsgs <= 3)
                     {
-                        string data = Encoding.UTF8.GetString(buffer, 0, buffer.Length);
+                        string data = Encoding.Unicode.GetString(buffer, 0, byte_count);
                         data = data.Split('\0')[0];
                         if (data.StartsWith("infomsg\u0001"))
                         {
@@ -374,7 +372,7 @@ namespace WPF.Massager
             int ido;
             if (int.TryParse(id, out ido) && list_clients.ContainsKey(ido))
             {
-                byte[] buffer = Encoding.UTF8.GetBytes(s);
+                byte[] buffer = Encoding.Unicode.GetBytes(s);
                 TcpClient C;
                 list_clients.TryGetValue(ido, out C);
                 NetworkStream streamo = C.GetStream();
@@ -399,7 +397,7 @@ namespace WPF.Massager
 
         private static void broadcast(string data)
         {
-            byte[] buffer = Encoding.UTF8.GetBytes(data);
+            byte[] buffer = Encoding.Unicode.GetBytes(data);
             lock (_lock)
             {
                 foreach (TcpClient c in list_clients.Values)
@@ -412,7 +410,7 @@ namespace WPF.Massager
 
         private void clientsend(string s)
         {
-                byte[] buffer = Encoding.UTF8.GetBytes(s);
+                byte[] buffer = Encoding.Unicode.GetBytes(s);
                 nscl.Write(buffer, 0, buffer.Length);
         }
 
@@ -442,14 +440,14 @@ namespace WPF.Massager
         private void ReceiveData(TcpClient client)
         {
             NetworkStream ns = client.GetStream();
-            byte[] receivedBytes = new byte[1024 * 4];
+            byte[] receivedBytes = new byte[client.ReceiveBufferSize];
             int byte_count;
             conected = true;
             try
             {
                 while ((byte_count = ns.Read(receivedBytes, 0, receivedBytes.Length)) > 0)
                 {
-                    string s = Encoding.UTF8.GetString(receivedBytes, 0, byte_count);
+                    string s = Encoding.Unicode.GetString(receivedBytes, 0, byte_count);
                     if (s.StartsWith("infomsg\u0001"))
                     {
                         string[] args = s.Split('\u0001');

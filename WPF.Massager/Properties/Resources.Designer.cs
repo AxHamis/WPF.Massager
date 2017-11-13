@@ -59,5 +59,15 @@ namespace WPF.Massager.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        public static byte[] Version {
+            get {
+                object obj = ResourceManager.GetObject("Version", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }
