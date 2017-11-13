@@ -157,18 +157,36 @@ namespace WPF.Massager
                 File.Delete(app+".old");
                 SystemMassage("UPDATE COMPLETE (" + WPF.Massager.Properties.Resources.Version + ")\n");
             }
+            if (versionchek()) updateexe();
+        }
+
+        private bool versionchek()
+        {
+            bool res = false;
+            if (new WebClient().DownloadString("https://github.com/AxHamis/WPF.Massager/raw/master/WPF.Massager/Resources/Version") != Encoding.ASCII.GetString(WPF.Massager.Properties.Resources.Version))
+            {
+                res = true;
+            }
+            return res;
         }
 
         private void updateexe()
         {
-            SystemMassage("UPDATE START (" + Encoding.ASCII.GetString(WPF.Massager.Properties.Resources.Version) + ")\n");
-            Thread.Sleep(1000);
-            string app = System.Reflection.Assembly.GetExecutingAssembly().Location;
-            File.Move(app, app + ".old");
-            WebClient GIT = new WebClient();
-            GIT.DownloadFile("https://github.com/AxHamis/WPF.Massager/blob/master/WPF.Massager/bin/Debug/WPF.Massager.exe?raw=true", app);
-            Process.Start(app);
-            Dispatcher.Invoke(() => this.Close());
+            if (versionchek())
+            {
+                SystemMassage("UPDATE START (" + Encoding.ASCII.GetString(WPF.Massager.Properties.Resources.Version) + ")\n");
+                Thread.Sleep(1000);
+                string app = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                File.Move(app, app + ".old");
+                WebClient GIT = new WebClient();
+                GIT.DownloadFile("https://github.com/AxHamis/WPF.Massager/blob/master/WPF.Massager/bin/Debug/WPF.Massager.exe?raw=true", app);
+                Process.Start(app);
+                Dispatcher.Invoke(() => this.Close());
+            }
+            else
+            {
+                SystemMassage("LAST VERSION (" + Encoding.ASCII.GetString(WPF.Massager.Properties.Resources.Version) + ")\n");
+            }
         }
 
         private void restartexe()
@@ -726,11 +744,6 @@ namespace WPF.Massager
             {
                 startclient(ip);
             }
-        }
-
-        private void Button_Click_3(object sender, RoutedEventArgs e)
-        {
-            updateexe();
         }
 
         private void Massage_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
