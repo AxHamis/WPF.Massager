@@ -33,6 +33,8 @@ namespace WPF.Massager
         private static extern UInt32 GetWindowLong(IntPtr hWnd, int nIndex);
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, UInt32 dwNewLong);
+        [DllImport("user32.dll")]
+        private static extern bool SetProcessDPIAware();
 
         public static void alwaysonbottom(Window F, bool b)
         {
@@ -75,6 +77,7 @@ namespace WPF.Massager
 
         public MainWindow()
         {
+            if (Environment.OSVersion.Version.Major >= 6) SetProcessDPIAware();
             InitializeComponent();
             ElementSetUp();
             delloldversion();
